@@ -1,0 +1,32 @@
+### https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/POST
+
+@LangVoyageServer_HostAddress = https://localhost:7231
+
+### Get a single user
+GET {{LangVoyageServer_HostAddress}}/user/v1/1
+Accept: application/json
+
+### Set the language level for the user
+PATCH {{LangVoyageServer_HostAddress}}/user/v1/1
+Content-Type: application/json
+
+{
+  "LanguageLevel": "B1"
+}
+
+### Set the name of the user, without modifying the language level
+PATCH {{LangVoyageServer_HostAddress}}/user/v1/1
+Content-Type: application/json
+
+{
+  "UserName": "johncclayton"
+}
+
+### Fails to set an incorrect language level for the user
+PATCH {{LangVoyageServer_HostAddress}}/user/v1/1
+Content-Type: application/json
+
+{
+  "LanguageLevel": "B9"
+}
+
