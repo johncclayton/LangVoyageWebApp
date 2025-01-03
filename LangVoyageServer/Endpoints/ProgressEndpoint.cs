@@ -18,7 +18,7 @@ public static class UserSessionEndpointV1
             .WithOpenApi();
 
         // - update progress with correct/false (patch)
-        group.MapPut("/{id:int}/noun/progress", async (IStorageService srv, int id, NounProgressRequest req) =>
+        group.MapPut("/{id:int}/noun", async (IStorageService srv, int id, NounProgressRequest req) =>
             {
                 var result = await srv.UpsertNounProgressAsync(id, req.NounId, req.AnswerWasCorrect);
                 return Ok(result);
