@@ -5,7 +5,7 @@ using static Microsoft.AspNetCore.Http.TypedResults;
 
 namespace LangVoyageServer.Endpoints;
 
-public static class UserSessionEndpointV1
+public static class LearningEndpointV1
 {
     public static RouteGroupBuilder MapProgressV1(this RouteGroupBuilder group)
     {

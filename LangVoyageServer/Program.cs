@@ -50,7 +50,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseCors(corsPolicyName);
 
-app.MapGroup("/progress/v1").MapProgressV1();
+app.MapGroup("/learn/v1").MapProgressV1();
 app.MapGroup("/user/v1").MapUserProfileV1();
 
 await Utilities.SeedDatabase(app);

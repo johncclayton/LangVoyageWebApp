@@ -3,14 +3,14 @@
 @LangVoyageServer_HostAddress = https://localhost:7231
 
 ### Get a noun that I've not practised yet.  This could also return a "learning plan" - right now it assumes nouns
-GET {{LangVoyageServer_HostAddress}}/progress/v1/1/noun
+GET {{LangVoyageServer_HostAddress}}/learn/v1/1/noun
 Accept: application/json
 
 ### Delete all the progress for a user
-DELETE {{LangVoyageServer_HostAddress}}/progress/v1/1/noun
+DELETE {{LangVoyageServer_HostAddress}}/learn/v1/1/noun
 
 ### Create/put a NounProgress in place, For nounId = 1
-PUT {{LangVoyageServer_HostAddress}}/progress/v1/1/noun
+PUT {{LangVoyageServer_HostAddress}}/learn/v1/1/noun
 Content-Type: application/json
 
 {
