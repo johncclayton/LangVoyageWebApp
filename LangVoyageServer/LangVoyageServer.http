@@ -1,0 +1,50 @@
+### https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/POST
+
+@LangVoyageServer_HostAddress = https://localhost:7231
+
+### Gets all the nouns
+GET {{LangVoyageServer_HostAddress}}/nouns
+Accept: application/json
+
+### Get a single user
+GET {{LangVoyageServer_HostAddress}}/users/1
+Accept: application/json
+
+### Get a noun that I've not practised yet.  This could also return a "learning plan" - right now it assumes nouns
+POST {{LangVoyageServer_HostAddress}}/users/1/progress/newnounprogress
+Accept: application/json
+
+### Set the language level for the user
+PATCH {{LangVoyageServer_HostAddress}}/users/1
+Content-Type: application/json
+
+{
+  "LanguageLevel": "B2"
+}
+
+### Set the name of the user, without modifying the language level
+PATCH {{LangVoyageServer_HostAddress}}/users/1
+Content-Type: application/json
+
+{
+  "UserName": "johncclayton"
+}
+
+### Fails to set an incorrect language level for the user
+PATCH {{LangVoyageServer_HostAddress}}/users/1
+Content-Type: application/json
+
+{
+  "LanguageLevel": "B9"
+}
+
+### Create/put a NounProgress in place, or update its LastPractised date/time. For nounId = 1
+PUT {{LangVoyageServer_HostAddress}}/users/1/progress
+Content-Type: application/json
+
+{
+  "NounId": 1,
+  "AnswerWasCorrect": true
+}
+
+

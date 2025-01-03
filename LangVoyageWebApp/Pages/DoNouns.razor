@@ -1,0 +1,125 @@
+﻿@page "/nouns"
+<h3>Noun Exercises</h3>
+
+<p>Fill in the noun article, and hit the "check results" button to see if you are correct.</p>
+
+<div class="container-fluid">
+    @if (Model != null)
+    {
+        <EditForm Model="@Model">
+            <DataAnnotationsValidator/>
+
+            <div class="row">
+                <div class="col">
+                    Article
+                </div>
+                <div class="col">
+                    Noun
+                </div>
+            </div>
+
+            <div class="row justify-content-start">
+                <div class="col">
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-secondary" @onclick="DieClicked">die</button>
+                        <button type="button" class="btn btn-secondary" @onclick="DerClicked">der</button>
+                        <button type="button" class="btn btn-secondary" @onclick="DasClicked">das</button>
+                    </div>
+                </div>
+
+                <div class="col align-middle">
+                    <div>@(Model.Original.Noun)</div>
+                </div>
+            </div>
+
+            @if(@ShowAlert) {
+                <div class="alert @(Model.IsCorrect ? "alert-success" : "alert-warning")" role="alert">
+                    @AlertMessageText
+                </div>
+            }
+
+            <button type="reset" class="btn btn-danger" @onclick="ResetNounProgress">Reset Progress</button>
+
+            <ValidationSummary />
+
+        </EditForm>
+    }
+
+    @code {
+        private NounModel? Model { get; set; }
+        private LanguageService NounService { get; set; }
+
+        private bool ShowAlert { get; set; } = false;
+        private string AlertMessageText { get; set; } = "";
+
+        private int TotalCorrect { get; set; } = 0;
+        private int TotalIncorrect { get; set; } = 0;
+
+        public DoNouns(LanguageService nounService)
+        {
+            NounService = nounService;
+        }
+
+        private async Task DerClicked() => await UpdateProgressAndFetchNext(Model!.Original.Article == "der");
+        private async Task DieClicked() => await UpdateProgressAndFetchNext(Model!.Original.Article == "die");
+        private async Task DasClicked() => await UpdateProgressAndFetchNext(Model!.Original.Article == "das");
+
+        private async Task UpdateProgressAndFetchNext(bool isCorrect)
+        {
+            Model!.IsCorrect = isCorrect;
+
+            ShowAlert = true;
+            AlertMessageText = "Not quite there... try once more.";
+            if(isCorrect) {
+                AlertMessageText = "You are correct!";
+            }
+
+            await NounService.UpdateNounProgressAsync(1, new NounProgressRequest{
+                NounId = Model.Original.Id,
+                AnswerWasCorrect = isCorrect
+            });
+
+            await Task.Delay(2000);
+
+            if (Model!.IsCorrect)
+            {
+                await FetchNewNoun();
+            }
+
+            ShowAlert = false;
+
+            StateHasChanged();
+        }
+
+        protected override async Task OnInitializedAsync()
+        {
+            await FetchNewNoun();
+        }
+
+        private async Task FetchNewNoun()
+        {
+            var orig = await NounService.GetNewNounProgressAsync(1);
+
+            Model = new NounModel {
+                    IsCorrect = false,
+                    Original = orig
+                };
+
+        }
+
+        public class NounModel {
+            public bool IsCorrect = false;
+            public LanguageNoun Original { get; set; }
+        }
+
+        private async void ResetNounProgress()
+        {
+            ShowAlert = true;
+            AlertMessageText = "Progress has been reset.";
+            Model!.IsCorrect = false;
+
+            await NounService.DeleteAllNounProgressAsync(1);
+            await FetchNewNoun();
+        }    
+    }
+</div>

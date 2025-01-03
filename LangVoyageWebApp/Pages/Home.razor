@@ -1,0 +1,26 @@
+﻿@page "/"
+@using LangVoyageWebApp.Components
+
+<PageTitle>Learning Center</PageTitle>
+
+<h1>Learning Center</h1>
+
+Select the exercises you want to do.
+<br/>
+<NavLink href="/nouns">Nouns</NavLink>
+<br/>
+<NavLink href="/sentences">Sentences</NavLink>
+
+<CircularProgress Progress="75"
+                  Size="150"
+                  FillColor="blue"
+                  BackgroundColor="#eee"
+                  InnerText="75%"
+                  OnClickCallback="@(() => OnCircleClicked())" />
+
+@code {
+    private void OnCircleClicked()
+    {
+        // Handle click logic here
+    }
+}

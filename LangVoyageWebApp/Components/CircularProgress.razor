@@ -1,0 +1,68 @@
+﻿@* CircularProgress.razor *@
+<div @onclick="OnClick"
+     style="
+         width:@(Size)px;
+     height:@(Size)px;
+     border-radius:50%;
+     position:relative;
+     cursor:pointer;
+     background:conic-gradient(@(FillColor) @(Progress * 3.6)deg, @(BackgroundColor) 0);
+     -webkit-mask: radial-gradient(
+     circle at center,
+     transparent 0 calc(50% - @(Thickness)px),
+     black calc(50% - @(Thickness)px) 50%,
+     transparent 50% 100%
+     );
+     mask: radial-gradient(
+     circle at center,
+     transparent 0 calc(50% - @(Thickness)px),
+     black calc(50% - @(Thickness)px) 50%,
+     transparent 50% 100%
+     );
+     display:flex;
+     align-items:center;
+     justify-content:center;
+     ">
+    @if (!string.IsNullOrEmpty(InnerText))
+    {
+        <span>@InnerText</span>
+    }
+    else if (!string.IsNullOrEmpty(InnerImageUrl))
+    {
+        <img src="@InnerImageUrl" alt="Inner Image" style="max-width:60%; max-height:60%;" />
+    }
+</div>
+
+@code {
+    [Parameter]
+    public int Progress { get; set; } = 0;
+
+    [Parameter]
+    public int Size { get; set; } = 100;
+
+    [Parameter]
+    public string FillColor { get; set; } = "green";
+
+    [Parameter]
+    public string BackgroundColor { get; set; } = "lightgray";
+
+    [Parameter]
+    public string InnerText { get; set; } = string.Empty;
+
+    [Parameter]
+    public string InnerImageUrl { get; set; } = string.Empty;
+
+    [Parameter]
+    public int Thickness { get; set; } = 10;
+
+    [Parameter]
+    public EventCallback OnClickCallback { get; set; }
+
+    private async Task OnClick()
+    {
+        if (OnClickCallback.HasDelegate)
+        {
+            await OnClickCallback.InvokeAsync(null);
+        }
+    }
+}

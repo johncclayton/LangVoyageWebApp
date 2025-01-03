@@ -1,0 +1,240 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "LangVoyageServer | v1",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://localhost:7231"
+    },
+    {
+      "url": "http://localhost:5037"
+    }
+  ],
+  "paths": {
+    "/users/{id}": {
+      "get": {
+        "tags": [
+          "LangVoyageServer"
+        ],
+        "description": "Returns a user by id.",
+        "operationId": "GetUserById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/nouns": {
+      "get": {
+        "tags": [
+          "LangVoyageServer"
+        ],
+        "description": "Returns the entire list of nouns.",
+        "operationId": "GetNouns",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LanguageNoun"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{id}/progress/newnounprogress": {
+      "post": {
+        "tags": [
+          "LangVoyageServer"
+        ],
+        "description": "Returns a random new noun to practise for this user, this will create a NounProgress record.",
+        "operationId": "GetNewNounProgress",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LanguageNoun"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{id}/progress": {
+      "delete": {
+        "tags": [
+          "LangVoyageServer"
+        ],
+        "description": "Deletes all progress record for the user specified by id.",
+        "operationId": "DeleteAllNounProgressAsync",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "LangVoyageServer"
+        ],
+        "description": "Updates an existing progress record for the user specified by id+nounId in the NounProgressRequest object, returns a NoneProgress object.",
+        "operationId": "UpdateNounProgress",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NounProgressRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NounProgress"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "LanguageNoun": {
+        "required": [
+          "noun",
+          "article"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "noun": {
+            "type": "string"
+          },
+          "article": {
+            "type": "string"
+          },
+          "plural": {
+            "type": "string",
+            "nullable": true
+          },
+          "pluralArticle": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "NounProgress": {
+        "required": [
+          "userProfileId",
+          "nounId"
+        ],
+        "type": "object",
+        "properties": {
+          "userProfileId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "nounId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "correct": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "incorrect": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "lastPractised": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "NounProgressRequest": {
+        "type": "object",
+        "properties": {
+          "nounId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "answerWasCorrect": {
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "LangVoyageServer"
+    }
+  ]
+}
