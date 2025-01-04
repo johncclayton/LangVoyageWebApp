@@ -42,14 +42,14 @@ public class TestEndpoints : IClassFixture<TestWebApplicationFactory<Program>>
     public async Task TestLearning_UserGetsTheRightLevelNouns()
     {
         var client = _factory.CreateClient();
-        
+
         var userresponse = client.GetAsync("/user/v1/1").Result;
         userresponse.EnsureSuccessStatusCode();
         var user = JsonSerializer.Deserialize<UserProfile>(userresponse.Content.ReadAsStringAsync().Result,
             new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
         Assert.NotNull(user);
         Assert.Equal(1, user.Id);
-        
+
         var response = await client.GetAsync($"/learn/v1/1/noun");
         response.EnsureSuccessStatusCode();
 
@@ -153,7 +153,7 @@ public class TestEndpoints : IClassFixture<TestWebApplicationFactory<Program>>
         response.EnsureSuccessStatusCode();
         var user = JsonSerializer.Deserialize<UserProfile>(response.Content.ReadAsStringAsync().Result,
             new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
-        
+
         var service = scope.ServiceProvider.GetRequiredService<IStorageService>();
         var result = service.GetUserAsync(1).GetAwaiter().GetResult();
 
@@ -197,5 +197,76 @@ public class TestEndpoints : IClassFixture<TestWebApplicationFactory<Program>>
                 LanguageLevel = "C0"
             }), Encoding.UTF8, "application/json"));
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task TestLearning_ProgressThroughLevel()
+    {
+        var client = _factory.CreateClient();
+        
+        var ur = client.GetAsync("/user/v1/1").Result;
+        ur.EnsureSuccessStatusCode();
+        var user = JsonSerializer.Deserialize<UserProfile>(ur.Content.ReadAsStringAsync().Result,
+            new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
+
+        // I want to be able to see my progress through the level.  this is done by fetching the progress component,
+        // which right now just handles progress of nouns (sentences, speaking, writing come later). 
+        var response = await client.GetAsync("/learn/v1/1/progress");
+        Assert.NotNull(response);
+        response.EnsureSuccessStatusCode();
+
+        // parse back to LearningProgressResponse
+        var content = await response.Content.ReadAsStringAsync();
+        var progress = JsonSerializer.Deserialize<LearningProgressResponse>(content, new JsonSerializerOptions()
+        {
+            PropertyNameCaseInsensitive = true
+        });
+
+        Assert.NotNull(progress);
+        Assert.Equal(user.Username, progress.Username);
+        Assert.Equal(user.LanguageLevel, progress.LanguageLevel);
+        
+        // now complete 2, we should see the progress at time frame 1 increase by 2.
+        using var scope = _factory.Services.CreateScope();
+        var service = scope.ServiceProvider.GetRequiredService<IStorageService>();
+        
+        // remove ALL progress records, to set up a clean slate.
+        await service.DeleteAllNounProgressAsync(1);
+        
+        var allNouns = await service.GetNewPractiseNounsAsync(1, 5);
+        Assert.NotNull(allNouns);
+        Assert.Equal(5, allNouns.Count());
+        
+        foreach (var noun in allNouns)
+        {
+            await service.UpsertNounProgressAsync(1, noun.Id, true);
+        }
+        
+        var updatedProgress = await service.GetLearningProgress(1);
+        Assert.NotNull(updatedProgress);
+        Assert.Equal(progress.TotalNouns, updatedProgress.TotalNouns);
+        Assert.Equal(5, updatedProgress.NounProgresses[1]);
+        
+        // now complete these AGAIN, and we should see a gap in the progress array develop.
+        foreach (var noun in allNouns)
+        {
+            await service.UpsertNounProgressAsync(1, noun.Id, true);
+        }
+        
+        updatedProgress = await service.GetLearningProgress(1);
+        Assert.NotNull(updatedProgress);
+        Assert.Equal(progress.TotalNouns, updatedProgress.TotalNouns);
+        Assert.Equal(0, updatedProgress.NounProgresses[1]);
+        Assert.Equal(5, updatedProgress.NounProgresses[2]);
+        
+        // now lets "fail" one, and see the progress report.
+        await service.UpsertNounProgressAsync(1, allNouns.First().Id, false);
+
+        updatedProgress = await service.GetLearningProgress(1);
+        Assert.NotNull(updatedProgress);
+        Assert.Equal(progress.TotalNouns, updatedProgress.TotalNouns);
+        Assert.Equal(1, updatedProgress.NounProgresses[1]);
+        Assert.Equal(4, updatedProgress.NounProgresses[2]);
+
     }
 }

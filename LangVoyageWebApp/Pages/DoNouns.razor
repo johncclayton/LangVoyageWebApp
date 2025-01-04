@@ -98,12 +98,12 @@
 
         private async Task FetchNewNoun()
         {
-            var orig = await NounService.GetNewNounProgressAsync(1);
-
-            Model = new NounModel {
-                    IsCorrect = false,
-                    Original = orig
-                };
+            // var orig = await NounService.GetPractiseNounsAsync(1);
+            //
+            // Model = new NounModel {
+            //         IsCorrect = false,
+            //         Original = orig
+            //     };
 
         }
 
@@ -118,8 +118,8 @@
             AlertMessageText = "Progress has been reset.";
             Model!.IsCorrect = false;
 
-            await NounService.DeleteAllNounProgressAsync(1);
-            await FetchNewNoun();
+            // await NounService.DeleteAllNounProgressAsync(1);
+            // await FetchNewNoun();
         }    
     }
 </div>

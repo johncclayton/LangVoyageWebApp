@@ -89,7 +89,7 @@ public class SqliteStorageService : IStorageService
         {
             throw new Exception("No user profile found.");
         }
-        
+
         // use the "noun progress view", to simply fetch a series of nouns that are "next" to be practised.
         return await _context.NounProgressView
             .Where(v => v.UserProfileId == userId && v.NounLevel == user.LanguageLevel)
@@ -159,7 +159,7 @@ public class SqliteStorageService : IStorageService
     public async Task<IList<NounProgress>> UpdateAllNounProgressAsync(int userId)
     {
         var allNouns = await GetNewPractiseNounsAsync(userId, 99999);
-        
+
         var result = new List<NounProgress>();
         foreach (var noun in allNouns)
         {
@@ -175,5 +175,35 @@ public class SqliteStorageService : IStorageService
             .Where(np => np.UserProfileId == userId);
         _context.NounProgresses.RemoveRange(toRemove.ToArray());
         await _context.SaveChangesAsync();
+    }
+
+    public async Task<LearningProgressResponse> GetLearningProgress(int userId)
+    {
+        var user = await GetUserAsync(userId);
+        if (user == null)
+        {
+            throw new Exception("No user profile found.");
+        }
+
+        var progress = await _context.NounProgressView
+            .Where(p => p.UserProfileId == userId && p.NounLevel == user.LanguageLevel)
+            .GroupBy(p => p.TimeFrame)
+            .Select(g => new { TimeFrame = g.Key, Count = g.Count() })
+            .ToListAsync();
+
+        LearningProgressResponse response = new()
+        {
+            Username = user.Username ?? throw new InvalidOperationException(),
+            LanguageLevel = user.LanguageLevel ?? throw new InvalidOperationException(),
+            TotalNouns = progress.Sum(p => p.Count),
+            NounProgresses = new int[progress.Max(p => p.TimeFrame) + 1]
+        };
+        
+        foreach (var item in progress)
+        {
+            response.NounProgresses[item.TimeFrame] = item.Count;
+        }
+        
+        return response;
     }
 }

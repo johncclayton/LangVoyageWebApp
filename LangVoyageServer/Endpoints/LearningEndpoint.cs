@@ -9,6 +9,14 @@ public static class LearningEndpointV1
 {
     public static RouteGroupBuilder MapLearningV1(this RouteGroupBuilder group)
     {
+        group.MapGet("/{userId:int}/progress", async (IStorageService svc, int userId) =>
+            {
+                return Ok(await svc.GetLearningProgress(userId));
+            })
+            .WithDescription("Returns a progress record which can help the UI to show how far through the content / level that the user is.")
+            .WithName("GetLearningProgress")
+            .WithOpenApi();
+        
         group.MapGet("/{userId:int}/noun", async (IStorageService svc, int userId) =>
             {
                 return Ok(await svc.GetNewPractiseNounsAsync(userId));

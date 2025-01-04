@@ -13,16 +13,16 @@
     }
   ],
   "paths": {
-    "/users/{id}": {
+    "/learn/v1/{userId}/noun": {
       "get": {
         "tags": [
           "LangVoyageServer"
         ],
-        "description": "Returns a user by id.",
-        "operationId": "GetUserById",
+        "description": "Returns a series of Nouns for the user to practise, using spaced repetition to determine which nouns are to be returned first.",
+        "operationId": "GetPractiseNouns",
         "parameters": [
           {
-            "name": "id",
+            "name": "userId",
             "in": "path",
             "required": true,
             "schema": {
@@ -31,20 +31,6 @@
             }
           }
         ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/nouns": {
-      "get": {
-        "tags": [
-          "LangVoyageServer"
-        ],
-        "description": "Returns the entire list of nouns.",
-        "operationId": "GetNouns",
         "responses": {
           "200": {
             "description": "OK",
@@ -60,50 +46,16 @@
             }
           }
         }
-      }
-    },
-    "/users/{id}/progress/newnounprogress": {
-      "post": {
-        "tags": [
-          "LangVoyageServer"
-        ],
-        "description": "Returns a random new noun to practise for this user, this will create a NounProgress record.",
-        "operationId": "GetNewNounProgress",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/LanguageNoun"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/users/{id}/progress": {
+      },
       "delete": {
         "tags": [
           "LangVoyageServer"
         ],
-        "description": "Deletes all progress record for the user specified by id.",
-        "operationId": "DeleteAllNounProgressAsync",
+        "description": "Deletes all progress record for the user specified by id.  Be careful, not reversible.",
+        "operationId": "DeleteAllPractiseProgress",
         "parameters": [
           {
-            "name": "id",
+            "name": "userId",
             "in": "path",
             "required": true,
             "schema": {
@@ -117,7 +69,9 @@
             "description": "No Content"
           }
         }
-      },
+      }
+    },
+    "/learn/v1/{id}/noun": {
       "put": {
         "tags": [
           "LangVoyageServer"
@@ -158,6 +112,64 @@
           }
         }
       }
+    },
+    "/user/v1/{id}": {
+      "get": {
+        "tags": [
+          "LangVoyageServer"
+        ],
+        "description": "Returns a user by id.",
+        "operationId": "GetUserById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "LangVoyageServer"
+        ],
+        "description": "Updates the language level and/or username of a user",
+        "operationId": "UpdateUserById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -165,7 +177,8 @@
       "LanguageNoun": {
         "required": [
           "noun",
-          "article"
+          "article",
+          "level"
         ],
         "type": "object",
         "properties": {
@@ -186,13 +199,17 @@
           "pluralArticle": {
             "type": "string",
             "nullable": true
+          },
+          "level": {
+            "type": "string"
           }
         }
       },
       "NounProgress": {
         "required": [
           "userProfileId",
-          "nounId"
+          "nounId",
+          "timeFrame"
         ],
         "type": "object",
         "properties": {
@@ -204,11 +221,7 @@
             "type": "integer",
             "format": "int32"
           },
-          "correct": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "incorrect": {
+          "timeFrame": {
             "type": "integer",
             "format": "int32"
           },
@@ -227,6 +240,19 @@
           },
           "answerWasCorrect": {
             "type": "boolean"
+          }
+        }
+      },
+      "UpdateUserRequest": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "nullable": true
+          },
+          "languageLevel": {
+            "type": "string",
+            "nullable": true
           }
         }
       }

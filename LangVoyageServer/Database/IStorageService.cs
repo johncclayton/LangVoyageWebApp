@@ -23,4 +23,5 @@ public interface IStorageService
     Task<IList<NounProgress>> UpdateAllNounProgressAsync(int userId);
     
     Task DeleteAllNounProgressAsync(int userId);
+    Task<LearningProgressResponse> GetLearningProgress(int userId);
 }
