@@ -7,7 +7,7 @@ namespace LangVoyageServer.Endpoints;
 
 public static class LearningEndpointV1
 {
-    public static RouteGroupBuilder MapProgressV1(this RouteGroupBuilder group)
+    public static RouteGroupBuilder MapLearningV1(this RouteGroupBuilder group)
     {
         group.MapGet("/{userId:int}/noun", async (IStorageService svc, int userId) =>
             {

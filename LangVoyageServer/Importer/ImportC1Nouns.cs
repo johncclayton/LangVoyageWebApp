@@ -4,7 +4,7 @@ namespace LangVoyageServer.Importer;
 
 public partial class DataImporter
 {
-    public void ImportC1Nouns()
+    public async Task ImportC1Nouns()
     {
         var data = new[]
         {
@@ -1062,6 +1062,6 @@ public partial class DataImporter
             new LanguageNoun { Level = "C1", Article = "die", Noun = "Zäsur", Plural = "Zäsuren" },
         };
 
-        Service.UpdateNounsAsync(data);
+        await Service.UpdateNounsAsync(data);
     }
 }

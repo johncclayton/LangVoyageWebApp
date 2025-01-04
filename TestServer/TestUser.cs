@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using LangVoyageServer.Database;
 using LangVoyageServer.Models;
+using Xunit.Abstractions;
 
 namespace TestServer;
 
@@ -12,15 +13,14 @@ public class TestUser(TestWebApplicationFactory<Program> _factory) : IClassFixtu
     {
         using (var scope = _factory.Services.CreateScope())
         {
-            var scopeServices = scope.ServiceProvider;
-            var db = scopeServices.GetRequiredService<LangServerDbContext>();
-            var service = scopeServices.GetRequiredService<IStorageService>();
-            await Utilities.SeedDatabase(db, service);
+            var (db, service) = await Utilities.SeedDatabase(scope, deleteDatabase: true);
+            var items = await service.GetNewPractiseNounsAsync(1);
+            Console.WriteLine($"There are {0} items", items.Count());
         }
 
         var client = _factory.CreateClient();
         var id = 1;
-        var response = await client.GetAsync($"/progress/v1/{id}/noun");
+        var response = await client.GetAsync($"/learn/v1/{id}/noun");
         response.EnsureSuccessStatusCode();
 
         // parse response to list of nouns

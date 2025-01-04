@@ -10,17 +10,17 @@ public partial class DataImporter
         Service = service;
     }
 
-    public void Run()
+    public async Task Run()
     {
         // you know what, originally I thought - lets read these from a file... then I figured, why?  just put it in the code... that's a file.
-        ImportA1Nouns();
-        ImportA2Nouns();
-        ImportB1Nouns();
-        ImportB2Nouns();
-        ImportC1Nouns();
-        ImportC2Nouns();
+        await ImportA1Nouns();
+        await ImportA2Nouns();
+        await ImportB1Nouns();
+        await ImportB2Nouns();
+        await ImportC1Nouns();
+        await ImportC2Nouns();
 
-        Context.SaveChanges();
+        await Context.SaveChangesAsync();
     }
 
     public IStorageService Service { get; set; }

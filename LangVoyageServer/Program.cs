@@ -50,13 +50,15 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseCors(corsPolicyName);
 
-app.MapGroup("/learn/v1").MapProgressV1();
+app.MapGroup("/learn/v1").MapLearningV1();
 app.MapGroup("/user/v1").MapUserProfileV1();
 
-await Utilities.SeedDatabase(app);
+// if (app.Environment.IsDevelopment())
+// {
+//     await Utilities.SeedDatabase(app);
+// }
 
 app.Run();
-
 
 // makes the Program class public, so it can be used in the test project.
 public partial class Program

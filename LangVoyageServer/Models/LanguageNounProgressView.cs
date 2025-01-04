@@ -2,7 +2,6 @@
 
 namespace LangVoyageServer.Models;
 
-[Table("NounProgressView")]
 public class LanguageNounProgressView
 {
     public int NounId { get; set; }
