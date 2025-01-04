@@ -21,23 +21,23 @@ public class TestWebApplicationFactory<TProgram>
                 services.Remove(descriptor);
             }
 
-            // services.AddSingleton<DbContext>(container =>
-            // {
-            //     var connection = new SqliteConnection("Data Source=:memory:");
-            //     connection.Open();
-            //     return connection;
-            // });
-
-            services.AddDbContext<LangServerDbContext>((options) =>
+            services.AddSingleton<SqliteConnection>(container =>
             {
-                options.UseSqlite("Data Source=C:\\Users\\johnc\\OneDrive\\Code\\LangVoyage\\LangVoyageWebApp\\TestServer\\test.sqlite");
+                var connection = new SqliteConnection("Data Source=:memory:");
+                connection.Open();
+                return connection;
             });
-            
-            // services.AddDbContext<LangServerDbContext>((container, options) =>
+
+            // services.AddDbContext<LangServerDbContext>((options) =>
             // {
-            //     var connection = container.GetRequiredService<SqliteConnection>();
-            //     options.UseSqlite(connection);
+            //     options.UseSqlite("Data Source=C:\\Users\\johnc\\OneDrive\\Code\\LangVoyage\\LangVoyageWebApp\\TestServer\\test.sqlite");
             // });
+            
+            services.AddDbContext<LangServerDbContext>((container, options) =>
+            {
+                var connection = container.GetRequiredService<SqliteConnection>();
+                options.UseSqlite(connection);
+            });
         });
 
         builder.UseEnvironment("Development");

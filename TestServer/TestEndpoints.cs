@@ -5,13 +5,13 @@ using LangVoyageServer.Models;
 namespace TestServer;
 
 [Collection("Sequential")]
-public class TestUser : IClassFixture<TestWebApplicationFactory<Program>>
+public class TestEndpoints : IClassFixture<TestWebApplicationFactory<Program>>
 {
     private readonly TestWebApplicationFactory<Program> _factory;
     private static bool _databaseInitialized;
     private static readonly object _lock = new object();
 
-    public TestUser(TestWebApplicationFactory<Program> factory)
+    public TestEndpoints(TestWebApplicationFactory<Program> factory)
     {
         _factory = factory;
         lock (_lock)
