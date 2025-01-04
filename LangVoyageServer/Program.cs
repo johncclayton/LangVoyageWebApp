@@ -53,10 +53,10 @@ app.UseCors(corsPolicyName);
 app.MapGroup("/learn/v1").MapLearningV1();
 app.MapGroup("/user/v1").MapUserProfileV1();
 
-// if (app.Environment.IsDevelopment())
-// {
-//     await Utilities.SeedDatabase(app);
-// }
+if (app.Environment.IsDevelopment())
+{
+    await Utilities.SeedDatabase(app);
+}
 
 app.Run();
 

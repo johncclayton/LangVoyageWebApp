@@ -42,6 +42,6 @@ public static class Utilities
     public static async Task<(LangServerDbContext, IStorageService)> SeedDatabase(WebApplication app)
     {
         using var scope = app.Services.CreateScope();
-        return await SeedDatabase(scope);
+        return await SeedDatabase(scope, false);
     }
 }
