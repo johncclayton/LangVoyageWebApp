@@ -1,6 +1,9 @@
-﻿using System.Text.Json;
+﻿using System.Net;
+using System.Text;
+using System.Text.Json;
 using LangVoyageServer.Database;
 using LangVoyageServer.Models;
+using LangVoyageServer.Requests;
 
 namespace TestServer;
 
@@ -19,7 +22,17 @@ public class TestEndpoints : IClassFixture<TestWebApplicationFactory<Program>>
             if (!_databaseInitialized)
             {
                 using var scope = _factory.Services.CreateScope();
-                Utilities.SeedDatabase(scope, deleteDatabase: true).GetAwaiter().GetResult();
+                var (context, service) = Utilities.SeedDatabase(scope, deleteDatabase: true).GetAwaiter().GetResult();
+
+                service.UpsertUserProfileAsync(1, new UpdateUserRequest()
+                    {
+                        Username = "spaceman",
+                        LanguageLevel = "C2"
+                    }
+                ).GetAwaiter().GetResult();
+
+                context.SaveChanges();
+
                 _databaseInitialized = true;
             }
         }
@@ -44,7 +57,7 @@ public class TestEndpoints : IClassFixture<TestWebApplicationFactory<Program>>
 
         foreach (var noun in nouns)
         {
-            Assert.Equal("B2", noun.Level);
+            Assert.Equal("C2", noun.Level);
         }
     }
 
@@ -57,31 +70,31 @@ public class TestEndpoints : IClassFixture<TestWebApplicationFactory<Program>>
         var service = scope.ServiceProvider.GetRequiredService<IStorageService>();
         var results = await service.GetNewPractiseNounsAsync(1);
         Assert.NotNull(results);
-        
+
         // take the first, and force create a NounProgress record.
         var oneNoun = results.First();
         Assert.NotNull(oneNoun);
-        
+
         // do this twice, so its more 
         await service.UpsertNounProgressAsync(1, oneNoun.Id, true);
         await service.UpsertNounProgressAsync(1, oneNoun.Id, true);
-        
+
         var oneNounProgress = await service.GetPractiseNounAsync(1, oneNoun.Id);
         Assert.NotNull(oneNounProgress);
 
         var initialTimeFrame = oneNounProgress.TimeFrame;
-        for(int index = 0; index < initialTimeFrame; index++)
+        for (int index = 0; index < initialTimeFrame; index++)
         {
             await service.UpsertNounProgressAsync(1, oneNounProgress.NounId, false);
         }
-        
+
         // now it should be at 0
         Assert.Equal(0, service.GetPractiseNounAsync(1, oneNounProgress.NounId).GetAwaiter().GetResult()!.TimeFrame);
         // fail it again, it should stay at 0
         await service.UpsertNounProgressAsync(1, oneNounProgress.NounId, false);
         Assert.Equal(0, service.GetPractiseNounAsync(1, oneNounProgress.NounId).GetAwaiter().GetResult()!.TimeFrame);
     }
-    
+
     [Fact]
     public async Task TestPractiseSession_NounProgressesAdjusted()
     {
@@ -114,11 +127,63 @@ public class TestEndpoints : IClassFixture<TestWebApplicationFactory<Program>>
         // now FAIL it, this noun's TimeFrame moves back by one slot
         await service.UpsertNounProgressAsync(1, oneNounProgress.NounId, false); // time frame now 3
         Assert.Equal(2, service.GetPractiseNounAsync(1, oneNounProgress.NounId).GetAwaiter().GetResult()!.TimeFrame);
-        
+
         results = await service.GetNewPractiseNounsAsync(1);
         Assert.NotNull(results);
         Assert.Equal(20, results.Count());
         Assert.NotEqual(oneNounProgress.NounId, results[0].Id);
         Assert.DoesNotContain(oneNounProgress.NounId, results.Select(x => x.Id));
+    }
+
+    [Fact]
+    public void Test_UserCanBeFetched()
+    {
+        using var scope = _factory.Services.CreateScope();
+
+        // fix up ALL NounProgress records, forcing this to be the first item in the list.
+        var service = scope.ServiceProvider.GetRequiredService<IStorageService>();
+
+        var result = service.GetUserAsync(1).GetAwaiter().GetResult();
+
+        Assert.NotNull(result);
+        Assert.Equal(1, result.Id);
+        Assert.Equal("spaceman", result.Username);
+        Assert.Equal("C2", result.LanguageLevel);
+    }
+
+    [Fact]
+    public async Task Test_UserLanguageLevelCanBeUpdated()
+    {
+        var client = _factory.CreateClient();
+        var response = await client.PatchAsync("/user/v1/1", new StringContent(JsonSerializer.Serialize(
+            new UpdateUserRequest()
+            {
+                Username = "spiffy",
+                LanguageLevel = "C1"
+            }), Encoding.UTF8, "application/json"));
+
+        response.EnsureSuccessStatusCode();
+
+        string? result = response.Content.ReadAsStringAsync().Result;
+        Assert.NotNull(result);
+        var user = JsonSerializer.Deserialize<UserProfile>(result,
+            new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
+        Assert.NotNull(user);
+        Assert.Equal("spiffy", user.Username);
+        Assert.Equal("C1", user.LanguageLevel);
+    }
+
+    [Fact]
+    public async Task Test_LanguageLevelValidation()
+    {
+        // try setting a crap language level, should get a validation error
+        var client = _factory.CreateClient();
+        var response = await client.PatchAsync("/user/v1/1", new StringContent(JsonSerializer.Serialize(
+            new UpdateUserRequest()
+            {
+                Username = "spiffy",
+                LanguageLevel = "C0"
+            }), Encoding.UTF8, "application/json"));
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 }
