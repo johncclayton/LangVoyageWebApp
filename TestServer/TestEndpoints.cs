@@ -39,11 +39,18 @@ public class TestEndpoints : IClassFixture<TestWebApplicationFactory<Program>>
     }
 
     [Fact]
-    public async Task TestPractiseNouns_B2UserOnlyGetsB2Results()
+    public async Task TestLearning_UserGetsTheRightLevelNouns()
     {
         var client = _factory.CreateClient();
-        var id = 1;
-        var response = await client.GetAsync($"/learn/v1/{id}/noun");
+        
+        var userresponse = client.GetAsync("/user/v1/1").Result;
+        userresponse.EnsureSuccessStatusCode();
+        var user = JsonSerializer.Deserialize<UserProfile>(userresponse.Content.ReadAsStringAsync().Result,
+            new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
+        Assert.NotNull(user);
+        Assert.Equal(1, user.Id);
+        
+        var response = await client.GetAsync($"/learn/v1/1/noun");
         response.EnsureSuccessStatusCode();
 
         var content = await response.Content.ReadAsStringAsync();
@@ -57,12 +64,12 @@ public class TestEndpoints : IClassFixture<TestWebApplicationFactory<Program>>
 
         foreach (var noun in nouns)
         {
-            Assert.Equal("C2", noun.Level);
+            Assert.Equal(user.LanguageLevel, noun.Level);
         }
     }
 
     [Fact]
-    public async Task TestPractiseSession_NounProgressBoundaryTests()
+    public async Task TestLearning_NounProgressBoundaryTests()
     {
         using var scope = _factory.Services.CreateScope();
 
@@ -96,7 +103,7 @@ public class TestEndpoints : IClassFixture<TestWebApplicationFactory<Program>>
     }
 
     [Fact]
-    public async Task TestPractiseSession_NounProgressesAdjusted()
+    public async Task TestLearning_NounProgressesAdjusted()
     {
         // scenario: all nouns have been practised.  some nouns incorrectly, therefore these incorrect nouns will have a different TimeFrame/level.
         using var scope = _factory.Services.CreateScope();
@@ -136,7 +143,7 @@ public class TestEndpoints : IClassFixture<TestWebApplicationFactory<Program>>
     }
 
     [Fact]
-    public void Test_UserCanBeFetched()
+    public void Test_UserCanBeFetched_ViaUrlAndService()
     {
         using var scope = _factory.Services.CreateScope();
 
@@ -157,7 +164,7 @@ public class TestEndpoints : IClassFixture<TestWebApplicationFactory<Program>>
     }
 
     [Fact]
-    public async Task Test_UserLanguageLevelCanBeUpdated()
+    public async Task Test_UserLanguageLevel_CanBeUpdated()
     {
         var client = _factory.CreateClient();
         var response = await client.PatchAsync("/user/v1/1", new StringContent(JsonSerializer.Serialize(
@@ -179,7 +186,7 @@ public class TestEndpoints : IClassFixture<TestWebApplicationFactory<Program>>
     }
 
     [Fact]
-    public async Task Test_LanguageLevelValidation()
+    public async Task Test_UserLanguageLevel_PatchValidation()
     {
         // try setting a crap language level, should get a validation error
         var client = _factory.CreateClient();
