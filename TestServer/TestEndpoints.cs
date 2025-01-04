@@ -275,6 +275,5 @@ public class TestEndpoints : IClassFixture<TestWebApplicationFactory<Program>>
         Assert.Equal(progress.TotalNouns, updatedProgress.TotalNouns);
         Assert.Equal(1, updatedProgress.NounProgresses[1]);
         Assert.Equal(4, updatedProgress.NounProgresses[2]);
-
     }
 }
