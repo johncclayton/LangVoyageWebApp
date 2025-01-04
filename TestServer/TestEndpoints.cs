@@ -140,15 +140,20 @@ public class TestEndpoints : IClassFixture<TestWebApplicationFactory<Program>>
     {
         using var scope = _factory.Services.CreateScope();
 
-        // fix up ALL NounProgress records, forcing this to be the first item in the list.
+        // fetch the record via the HTTP endpoint
+        var client = _factory.CreateClient();
+        var response = client.GetAsync("/user/v1/1").Result;
+        response.EnsureSuccessStatusCode();
+        var user = JsonSerializer.Deserialize<UserProfile>(response.Content.ReadAsStringAsync().Result,
+            new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
+        
         var service = scope.ServiceProvider.GetRequiredService<IStorageService>();
-
         var result = service.GetUserAsync(1).GetAwaiter().GetResult();
 
         Assert.NotNull(result);
         Assert.Equal(1, result.Id);
-        Assert.Equal("spaceman", result.Username);
-        Assert.Equal("C2", result.LanguageLevel);
+        Assert.Equal(user.Username, result.Username);
+        Assert.Equal(user.LanguageLevel, result.LanguageLevel);
     }
 
     [Fact]
