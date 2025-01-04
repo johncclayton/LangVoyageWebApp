@@ -8,7 +8,6 @@
 
 Select the exercises you want to use.
 <br/>
-<CircularProgress InnerText="Nouns!" Thickness="18" Progress="22"></CircularProgress>
 
 <NavLink href="/nouns">Lets practise nouns</NavLink>
 <br/>
@@ -18,13 +17,16 @@ Select the exercises you want to use.
                   Size="150"
                   FillColor="blue"
                   BackgroundColor="#eee"
-                  InnerText="75%"
-                  OnClickCallback="@(() => OnCircleClicked())" />
+                  InnerText="Nouns"
+                  OnClickCallback="@(() => NavigationManager.NavigateTo("/nouns"))"/>
+
+<CircularProgress Progress="15"
+                  Size="150"
+                  FillColor="green"
+                  BackgroundColor="#eee"
+                  InnerText="Sentences"
+                  OnClickCallback="@(() => NavigationManager.NavigateTo("/sentences"))"/>
 
 @code {
-    private void OnCircleClicked()
-    {
-        // Handle click logic here
-        NavigationManager.NavigateTo("/nouns");
-    }
+
 }
