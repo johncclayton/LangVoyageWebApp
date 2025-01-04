@@ -48,7 +48,7 @@ public class SqliteStorageService : IStorageService
             return null;
         }
 
-        var existingProfile = await _context.UserProfiles.Where(up => up.Id == id).FirstOrDefaultAsync();
+        var existingProfile = _context.UserProfiles.SingleOrDefault(uf => uf.Id == id);
         if (existingProfile != null)
         {
             if (req.Username != null)
@@ -77,9 +77,9 @@ public class SqliteStorageService : IStorageService
         return existingProfile;
     }
 
-    public Task<UserProfile?> GetUserAsync(int userId)
+    public async Task<UserProfile?> GetUserAsync(int userId)
     {
-        return _context.UserProfiles.Where(u => u.Id == userId).FirstOrDefaultAsync();
+        return await _context.UserProfiles.FindAsync(userId);
     }
 
     public async Task<IList<LanguageNoun>> GetNewPractiseNounsAsync(int userId, int limit)
@@ -102,6 +102,11 @@ public class SqliteStorageService : IStorageService
             .ToListAsync();
     }
 
+    public async Task<NounProgress?> GetPractiseNounAsync(int userId, int nounId)
+    {
+        return await _context.NounProgresses.FindAsync([userId, nounId]);
+    }
+
     public async Task<NounProgress> UpsertNounProgressAsync(int userId, int nounId, bool wasCorrect)
     {
         var user = await GetUserAsync(userId);
@@ -110,9 +115,7 @@ public class SqliteStorageService : IStorageService
             throw new Exception("No user profile found.");
         }
 
-        var nounProgress = await _context.NounProgresses
-            .FirstOrDefaultAsync(np => np.UserProfileId == userId && np.NounId == nounId);
-
+        var nounProgress = await _context.NounProgresses.FindAsync([userId, nounId]);
         if (nounProgress == null)
         {
             // create one!
@@ -144,11 +147,33 @@ public class SqliteStorageService : IStorageService
         return nounProgress;
     }
 
+    public async Task<int> DeleteNounProgressAsync(int userId, int nounId)
+    {
+        await _context.SaveChangesAsync();
+        var theProgress = _context.NounProgresses
+            .Where(np => np.UserProfileId == userId && np.NounId == nounId);
+        _context.NounProgresses.RemoveRange(theProgress.ToArray());
+        return await _context.SaveChangesAsync();
+    }
+
+    public async Task<IList<NounProgress>> UpdateAllNounProgressAsync(int userId)
+    {
+        var allNouns = await GetNewPractiseNounsAsync(userId, 99999);
+        
+        var result = new List<NounProgress>();
+        foreach (var noun in allNouns)
+        {
+            result.Add(await UpsertNounProgressAsync(userId, noun.Id, true));
+        }
+
+        return result;
+    }
+
     public async Task DeleteAllNounProgressAsync(int userId)
     {
-        await _context.NounProgresses
-            .Where(np => np.UserProfileId == userId)
-            .ExecuteDeleteAsync();
+        var toRemove = _context.NounProgresses
+            .Where(np => np.UserProfileId == userId);
+        _context.NounProgresses.RemoveRange(toRemove.ToArray());
         await _context.SaveChangesAsync();
     }
 }
