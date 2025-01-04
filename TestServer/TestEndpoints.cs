@@ -43,9 +43,9 @@ public class TestEndpoints : IClassFixture<TestWebApplicationFactory<Program>>
     {
         var client = _factory.CreateClient();
 
-        var userresponse = client.GetAsync("/user/v1/1").Result;
+        var userresponse = await client.GetAsync("/user/v1/1");
         userresponse.EnsureSuccessStatusCode();
-        var user = JsonSerializer.Deserialize<UserProfile>(userresponse.Content.ReadAsStringAsync().Result,
+        var user = JsonSerializer.Deserialize<UserProfile>(await userresponse.Content.ReadAsStringAsync(),
             new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
         Assert.NotNull(user);
         Assert.Equal(1, user.Id);
@@ -96,10 +96,13 @@ public class TestEndpoints : IClassFixture<TestWebApplicationFactory<Program>>
         }
 
         // now it should be at 0
-        Assert.Equal(0, service.GetPractiseNounAsync(1, oneNounProgress.NounId).GetAwaiter().GetResult()!.TimeFrame);
+        var practiceNoun = await service.GetPractiseNounAsync(1, oneNounProgress.NounId);
+        Assert.Equal(0, practiceNoun!.TimeFrame);
+        
         // fail it again, it should stay at 0
         await service.UpsertNounProgressAsync(1, oneNounProgress.NounId, false);
-        Assert.Equal(0, service.GetPractiseNounAsync(1, oneNounProgress.NounId).GetAwaiter().GetResult()!.TimeFrame);
+        practiceNoun = await service.GetPractiseNounAsync(1, oneNounProgress.NounId);
+        Assert.Equal(0, practiceNoun!.TimeFrame);
     }
 
     [Fact]
@@ -125,15 +128,15 @@ public class TestEndpoints : IClassFixture<TestWebApplicationFactory<Program>>
 
         // now practise this noun TWICE, and re-fetch - this should mean it now disappears from the list. 
         await service.UpsertNounProgressAsync(1, oneNounProgress.NounId, true); // time frame now 1
-        Assert.Equal(1, service.GetPractiseNounAsync(1, oneNounProgress.NounId).GetAwaiter().GetResult()!.TimeFrame);
+        Assert.Equal(1, (await service.GetPractiseNounAsync(1, oneNounProgress.NounId))!.TimeFrame);
         await service.UpsertNounProgressAsync(1, oneNounProgress.NounId, true); // time frame now 2
-        Assert.Equal(2, service.GetPractiseNounAsync(1, oneNounProgress.NounId).GetAwaiter().GetResult()!.TimeFrame);
+        Assert.Equal(2, (await service.GetPractiseNounAsync(1, oneNounProgress.NounId))!.TimeFrame);
         await service.UpsertNounProgressAsync(1, oneNounProgress.NounId, true); // time frame now 3
-        Assert.Equal(3, service.GetPractiseNounAsync(1, oneNounProgress.NounId).GetAwaiter().GetResult()!.TimeFrame);
+        Assert.Equal(3, (await service.GetPractiseNounAsync(1, oneNounProgress.NounId))!.TimeFrame);
 
         // now FAIL it, this noun's TimeFrame moves back by one slot
         await service.UpsertNounProgressAsync(1, oneNounProgress.NounId, false); // time frame now 3
-        Assert.Equal(2, service.GetPractiseNounAsync(1, oneNounProgress.NounId).GetAwaiter().GetResult()!.TimeFrame);
+        Assert.Equal(2, (await service.GetPractiseNounAsync(1, oneNounProgress.NounId))!.TimeFrame);
 
         results = await service.GetNewPractiseNounsAsync(1);
         Assert.NotNull(results);
@@ -143,19 +146,22 @@ public class TestEndpoints : IClassFixture<TestWebApplicationFactory<Program>>
     }
 
     [Fact]
-    public void Test_UserCanBeFetched_ViaUrlAndService()
+    public async Task Test_UserCanBeFetched_ViaUrlAndService()
     {
         using var scope = _factory.Services.CreateScope();
 
         // fetch the record via the HTTP endpoint
         var client = _factory.CreateClient();
-        var response = client.GetAsync("/user/v1/1").Result;
+        var response = await client.GetAsync("/user/v1/1");
         response.EnsureSuccessStatusCode();
-        var user = JsonSerializer.Deserialize<UserProfile>(response.Content.ReadAsStringAsync().Result,
+        
+        var data = await response.Content.ReadAsStringAsync();
+        var user = JsonSerializer.Deserialize<UserProfile>(data,
             new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
+        Assert.NotNull(user);
 
         var service = scope.ServiceProvider.GetRequiredService<IStorageService>();
-        var result = service.GetUserAsync(1).GetAwaiter().GetResult();
+        var result = await service.GetUserAsync(1);
 
         Assert.NotNull(result);
         Assert.Equal(1, result.Id);
@@ -176,7 +182,7 @@ public class TestEndpoints : IClassFixture<TestWebApplicationFactory<Program>>
 
         response.EnsureSuccessStatusCode();
 
-        string? result = response.Content.ReadAsStringAsync().Result;
+        string? result = await response.Content.ReadAsStringAsync();
         Assert.NotNull(result);
         var user = JsonSerializer.Deserialize<UserProfile>(result,
             new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
@@ -204,9 +210,9 @@ public class TestEndpoints : IClassFixture<TestWebApplicationFactory<Program>>
     {
         var client = _factory.CreateClient();
         
-        var ur = client.GetAsync("/user/v1/1").Result;
+        var ur = await client.GetAsync("/user/v1/1");
         ur.EnsureSuccessStatusCode();
-        var user = JsonSerializer.Deserialize<UserProfile>(ur.Content.ReadAsStringAsync().Result,
+        var user = JsonSerializer.Deserialize<UserProfile>(await ur.Content.ReadAsStringAsync(),
             new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
 
         // I want to be able to see my progress through the level.  this is done by fetching the progress component,
@@ -223,6 +229,8 @@ public class TestEndpoints : IClassFixture<TestWebApplicationFactory<Program>>
         });
 
         Assert.NotNull(progress);
+        Assert.NotNull(user);
+        
         Assert.Equal(user.Username, progress.Username);
         Assert.Equal(user.LanguageLevel, progress.LanguageLevel);
         
