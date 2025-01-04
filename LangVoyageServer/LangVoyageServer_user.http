@@ -11,7 +11,7 @@ PATCH {{LangVoyageServer_HostAddress}}/user/v1/1
 Content-Type: application/json
 
 {
-  "LanguageLevel": "B1"
+  "LanguageLevel": "A1"
 }
 
 ### Set the name of the user, without modifying the language level

@@ -2,6 +2,10 @@
 
 @LangVoyageServer_HostAddress = https://localhost:7231
 
+### Get a single user
+GET {{LangVoyageServer_HostAddress}}/user/v1/1
+Accept: application/json
+
 ### Get a noun that I've not practised yet.  This could also return a "learning plan" - right now it assumes nouns
 GET {{LangVoyageServer_HostAddress}}/learn/v1/1/noun
 Accept: application/json

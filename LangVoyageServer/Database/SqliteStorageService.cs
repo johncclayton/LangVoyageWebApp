@@ -84,9 +84,15 @@ public class SqliteStorageService : IStorageService
 
     public async Task<IList<LanguageNoun>> GetNewPractiseNounsAsync(int userId, int limit)
     {
+        var user = await GetUserAsync(userId);
+        if (user == null)
+        {
+            throw new Exception("No user profile found.");
+        }
+        
         // use the "noun progress view", to simply fetch a series of nouns that are "next" to be practised.
         return await _context.NounProgressView
-            .Where(v => v.UserProfileId == userId)
+            .Where(v => v.UserProfileId == userId && v.NounLevel == user.LanguageLevel)
             .OrderBy(v => v.TimeFrame)
             .Join(_context.Nouns,
                 progress => progress.NounId,

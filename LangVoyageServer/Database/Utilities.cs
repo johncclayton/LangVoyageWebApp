@@ -16,8 +16,10 @@ public static class Utilities
 
         if(deleteDatabase)
         {
-            context.Database.EnsureDeleted();
-            context.Database.Migrate();
+            await context.Database.EnsureDeletedAsync();
+            await context.Database.MigrateAsync();
+        } else {
+            await context.Database.EnsureCreatedAsync();
         }
         
         // go get the raw data, and populate the DB. ONLY IF THERE ARE NO ROWS IN THE NOUNS TABLE.

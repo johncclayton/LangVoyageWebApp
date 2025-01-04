@@ -1,7 +1,6 @@
 ﻿using System.Text.Json;
 using LangVoyageServer.Database;
 using LangVoyageServer.Models;
-using Xunit.Abstractions;
 
 namespace TestServer;
 
@@ -14,8 +13,6 @@ public class TestUser(TestWebApplicationFactory<Program> _factory) : IClassFixtu
         using (var scope = _factory.Services.CreateScope())
         {
             var (db, service) = await Utilities.SeedDatabase(scope, deleteDatabase: true);
-            var items = await service.GetNewPractiseNounsAsync(1);
-            Console.WriteLine($"There are {0} items", items.Count());
         }
 
         var client = _factory.CreateClient();
@@ -25,11 +22,14 @@ public class TestUser(TestWebApplicationFactory<Program> _factory) : IClassFixtu
 
         // parse response to list of nouns
         var content = await response.Content.ReadAsStringAsync();
-        var nouns = JsonSerializer.Deserialize<IEnumerable<LanguageNoun>>(content);
+        var nouns = JsonSerializer.Deserialize<IList<LanguageNoun>>(content, new JsonSerializerOptions()
+        {
+            PropertyNameCaseInsensitive = true
+        });
 
         // should have *some*, actually, 10!
         Assert.NotNull(nouns);
-        Assert.Equal(10, nouns.Count());
+        Assert.Equal(20, nouns.Count());
 
         foreach (var noun in nouns)
         {
