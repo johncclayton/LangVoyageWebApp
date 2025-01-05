@@ -1,138 +1,167 @@
 ﻿@page "/nouns"
-<h3>Noun Exercises</h3>
+@inject IJSRuntime JSRuntime
 
-<p>Fill in the noun article, and hit the "check results" button to see if you are correct.</p>
+<h3 class="mt-4">Noun Exercises</h3>
 
-<div class="container-fluid">
+<p class="mb-4">Fill in the noun article, type the plural form, and then either hit the check button or press Enter to see if you are correct.</p>
+
+<div class="container my-5">
     @if (Model != null)
     {
-        <EditForm Model="@Model">
-            <DataAnnotationsValidator/>
+        <EditForm Model="@Model" OnValidSubmit="@CheckAnswer" class="row justify-content-center">
+            <DataAnnotationsValidator />
+            <div class="col-lg-6">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <div class="fw-bold mb-2">Select an article:</div>
+                            <div id="btnGroupArticle" class="btn-group" role="group" tabindex="-1">
+                                <button type="button" class="btn btn-secondary" @onclick="UserSelectedDie">die</button>
+                                <button type="button" class="btn btn-secondary" @onclick="UserSelectedDer">der</button>
+                                <button type="button" class="btn btn-secondary" @onclick="UserSelectedDas">das</button>
+                            </div>
+                        </div>
 
-            <div class="row">
-                <div class="col">
-                    Article
-                </div>
-                <div class="col">
-                    Noun
-                </div>
-            </div>
+                        <div class="mb-3">
+                            <div class="fw-bold">Noun:</div>
+                            <div>@(Model.CurrentNoun)</div>
+                        </div>
 
-            <div class="row justify-content-start">
-                <div class="col">
-                    <div class="btn-group" role="group">
-                        <button type="button" class="btn btn-secondary" @onclick="DieClicked">die</button>
-                        <button type="button" class="btn btn-secondary" @onclick="DerClicked">der</button>
-                        <button type="button" class="btn btn-secondary" @onclick="DasClicked">das</button>
+                        @* <div class="mb-3"> *@
+                        @*     <div class="fw-bold">Plural form:</div> *@
+                        @*     <InputText class="form-control" @bind-Value="Model.UserPlural" /> *@
+                        @* </div> *@
+
+                        @* <div class="text-end"> *@
+                        @*     <button type="submit" class="btn btn-primary">Check Results</button> *@
+                        @* </div> *@
+
+                        @if (ShowAlert)
+                        {
+                            <div class="alert @(AlertIsCorrect ? "alert-success" : "alert-warning") mt-3" role="alert">
+                                @AlertMessageText
+                            </div>
+                        }
+
+                        <ValidationSummary />
                     </div>
                 </div>
-
-                <div class="col align-middle">
-                    <div>@(Model.CurrentNoun)</div>
-                </div>
             </div>
-
-            @if(@ShowAlert) {
-                <div class="alert @(AlertIsCorrect ? "alert-success" : "alert-warning")" role="alert">
-                    @AlertMessageText
-                </div>
-            }
-
-            <ValidationSummary />
-
         </EditForm>
     }
-
-    @code {
-        private NounModel? Model { get; set; }
-        private LanguageService NounService { get; set; }
-
-        private bool ShowAlert { get; set; } = false;
-        private bool AlertIsCorrect { get; set; } = false;
-        private string AlertMessageText { get; set; } = "";
-        
-        public DoNouns(LanguageService nounService)
-        {
-            NounService = nounService;
-        }
-
-        private async Task DerClicked() => await UpdateProgressAndFetchNext("der");
-        private async Task DieClicked() => await UpdateProgressAndFetchNext("die");
-        private async Task DasClicked() => await UpdateProgressAndFetchNext("das");
-
-        private async Task UpdateProgressAndFetchNext(string requiredArticle)
-        {
-            AlertIsCorrect = requiredArticle == Model!.CurrentArticle.ToLower();
-            Model!.LearningSession[Model.CurrentIndex].AnsweredCorrectly = AlertIsCorrect;
-            
-            ShowAlert = true;
-            AlertMessageText = "Not quite there... try once more.";
-            if(AlertIsCorrect) {
-                AlertMessageText = "You are correct!";
-                NextNoun();
-            } 
-            
-            await Task.Delay(2000);
-            
-            ShowAlert = false;
-        
-            StateHasChanged();
-        }
-
-        private void NextNoun()
-        {
-            if (Model!.CurrentIndex < Model.LearningSession.Length - 1)
-            {
-                Model!.CurrentIndex++;
-                return;
-            }
-            
-            // send results back to the server...
-            
-            // ask the user if they want to go for another round, or summarise
-            // FetchNewLearningSessionData();
-        }
-
-        protected override async Task OnInitializedAsync()
-        {
-            await FetchNewLearningSessionData();
-        }
-
-        private async Task FetchNewLearningSessionData()
-        {
-            var data = await NounService.GetPractiseNounsAsync(1);
-            Model = new NounModel {
-                CurrentIndex = 0,
-                LearningSession = data.Select(x => new LearningNoun(){
-                    Data = x,
-                    AnsweredCorrectly = false
-                }).ToArray() 
-            };
-        }
-
-        public class LearningNoun {
-            public required LanguageNoun Data { get; set; }
-            public bool AnsweredCorrectly { get; set; }
-        }
-        
-        public class NounModel {
-            public int CurrentIndex { get; set; }
-            public required LearningNoun[] LearningSession { get; set; }
-            
-            public string CurrentNoun => LearningSession[CurrentIndex].Data.Noun;
-            public string CurrentArticle => LearningSession[CurrentIndex].Data.Article;
-            public string CurrentPlural => LearningSession[CurrentIndex].Data.Plural;
-            
-        }
-
-        // private async void ResetNounProgress()
-        // {
-        //     ShowAlert = true;
-        //     AlertMessageText = "Progress has been reset.";
-        //     Model!.IsCorrect = false;
-        //
-        //     // await NounService.DeleteAllNounProgressAsync(1);
-        //     // await FetchNewLearningSessionData();
-        // }    
-    }
 </div>
+
+@code {
+    private NounModel? Model { get; set; }
+    private LanguageService NounService { get; set; }
+
+    private bool ShowAlert { get; set; } = false;
+    private bool AlertIsCorrect { get; set; } = false;
+    private string AlertMessageText { get; set; } = "";
+
+    public DoNouns(LanguageService nounService)
+    {
+        NounService = nounService;
+    }
+
+    private async Task CheckAnswer()
+    {
+        // await JSRuntime.InvokeVoidAsync("eval", "document.getElementById('btnGroupArticle').blur();");
+        
+        bool articleIsCorrect = Model!.ChosenArticle.Equals(Model.CurrentArticle, StringComparison.OrdinalIgnoreCase);
+        // bool pluralIsCorrect = (Model.UserPlural ?? "").Trim().Equals(Model.CurrentPlural, StringComparison.OrdinalIgnoreCase);
+
+        AlertIsCorrect = articleIsCorrect ;//&& pluralIsCorrect;
+        Model.LearningSession[Model.CurrentIndex].AnsweredCorrectly = AlertIsCorrect;
+
+        ShowAlert = true;
+        AlertMessageText = "Not quite... try once more.";
+
+        if (AlertIsCorrect)
+        {
+            AlertMessageText = "You are correct!";
+            NextNoun();
+        }
+
+        await Task.Delay(2000);
+
+        ShowAlert = false;
+        
+        StateHasChanged();
+    }
+
+    private void NextNoun()
+    {
+        Model!.ChosenArticle = "";
+        Model.UserPlural = "";
+
+        if (Model.CurrentIndex < Model.LearningSession.Length - 1)
+        {
+            Model.CurrentIndex++;
+            return;
+        }   
+
+        // send results back to the server...
+        // ask the user if they want to go for another round, or summarise
+        // FetchNewLearningSessionData();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await FetchNewLearningSessionData();
+    }
+
+    private async Task FetchNewLearningSessionData()
+    {
+        var data = await NounService.GetPractiseNounsAsync(1);
+        Model = new NounModel
+        {
+            CurrentIndex = 0,
+            LearningSession = data.Select(x => new LearningNoun
+            {
+                Data = x,
+                AnsweredCorrectly = false
+            }).ToArray(),
+            ChosenArticle = "",
+            UserPlural = ""
+        };
+    }
+
+    public class LearningNoun
+    {
+        public required LanguageNoun Data { get; set; }
+        public bool AnsweredCorrectly { get; set; }
+    }
+
+    public class NounModel
+    {
+        public int CurrentIndex { get; set; }
+        public required LearningNoun[] LearningSession { get; set; }
+
+        public string CurrentNoun => LearningSession[CurrentIndex].Data.Noun;
+        public string CurrentArticle => LearningSession[CurrentIndex].Data.Article;
+        public string CurrentPlural => LearningSession[CurrentIndex].Data.Plural;
+
+        public string ChosenArticle { get; set; } = "";
+        public string UserPlural { get; set; } = "";
+    }
+
+    private void UserSelectedDie()
+    {
+         Model!.ChosenArticle = "die";
+         _ = CheckAnswer();
+    }
+
+    private void UserSelectedDer()
+    {
+        Model!.ChosenArticle = "der";
+        _ = CheckAnswer();
+    }
+
+    private void UserSelectedDas()
+    {
+        Model!.ChosenArticle = "das";
+        _ = CheckAnswer();
+    }
+
+}
