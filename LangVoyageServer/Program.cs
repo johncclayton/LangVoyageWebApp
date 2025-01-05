@@ -45,6 +45,7 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
     app.MapScalarApiReference();
+    app.UseDeveloperExceptionPage();
 }
 
 app.UseHttpsRedirection();
@@ -53,10 +54,16 @@ app.UseCors(corsPolicyName);
 app.MapGroup("/learn/v1").MapLearningV1();
 app.MapGroup("/user/v1").MapUserProfileV1();
 
-// if (app.Environment.IsDevelopment())
-// {
-//     await Utilities.SeedDatabase(app);
-// }
+// IS_TEST_ENVIRONMENT is set in the TestWebApplicationFactory, it's "true" when 
+// this system is being integration tested - in which case we DO NOT run the seeding
+// of the database.
+if (Environment.GetEnvironmentVariable("IS_TEST_ENVIRONMENT") == null)
+{
+    if (app.Environment.IsDevelopment())
+    {
+        await Utilities.SeedDatabase(app);
+    }
+}
 
 app.Run();
 

@@ -13,6 +13,8 @@ public class TestWebApplicationFactory<TProgram>
     {
         builder.ConfigureServices(services =>
         {
+            Environment.SetEnvironmentVariable("IS_TEST_ENVIRONMENT", "true");
+            
             var descriptor = services.SingleOrDefault(d => 
                 d.ServiceType == typeof(DbContextOptions<LangServerDbContext>));
 

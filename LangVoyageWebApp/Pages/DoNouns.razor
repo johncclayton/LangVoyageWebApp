@@ -32,13 +32,11 @@
                 </div>
             </div>
 
-            @* @if(@ShowAlert) { *@
-            @*     <div class="alert @(Model.IsCorrect ? "alert-success" : "alert-warning")" role="alert"> *@
-            @*         @AlertMessageText *@
-            @*     </div> *@
-            @* } *@
-
-            @* <button type="reset" class="btn btn-danger" @onclick="ResetNounProgress">Reset Progress</button> *@
+            @if(@ShowAlert) {
+                <div class="alert @(AlertIsCorrect ? "alert-success" : "alert-warning")" role="alert">
+                    @AlertMessageText
+                </div>
+            }
 
             <ValidationSummary />
 
@@ -50,6 +48,7 @@
         private LanguageService NounService { get; set; }
 
         private bool ShowAlert { get; set; } = false;
+        private bool AlertIsCorrect { get; set; } = false;
         private string AlertMessageText { get; set; } = "";
         
         public DoNouns(LanguageService nounService)
@@ -57,35 +56,41 @@
             NounService = nounService;
         }
 
-        private async Task DerClicked() => await UpdateProgressAndFetchNext(Model!.CurrentArticle == "der");
-        private async Task DieClicked() => await UpdateProgressAndFetchNext(Model!.CurrentArticle == "die");
-        private async Task DasClicked() => await UpdateProgressAndFetchNext(Model!.CurrentArticle == "das");
+        private async Task DerClicked() => await UpdateProgressAndFetchNext("der");
+        private async Task DieClicked() => await UpdateProgressAndFetchNext("die");
+        private async Task DasClicked() => await UpdateProgressAndFetchNext("das");
 
-        private async Task UpdateProgressAndFetchNext(bool isCorrect)
+        private async Task UpdateProgressAndFetchNext(string requiredArticle)
         {
-            // Model!.IsCorrect = isCorrect;
-            //
-            // ShowAlert = true;
-            // AlertMessageText = "Not quite there... try once more.";
-            // if(isCorrect) {
-            //     AlertMessageText = "You are correct!";
-            // }
-            //
-            // await NounService.UpdateNounProgressAsync(1, new NounProgressRequest{
-            //     NounId = Model.Original.Id,
-            //     AnswerWasCorrect = isCorrect
-            // });
-            //
-            // await Task.Delay(2000);
-            //
-            // if (Model!.IsCorrect)
-            // {
-            //     await FetchNewLearningSessionData();
-            // }
-            //
-            // ShowAlert = false;
+            AlertIsCorrect = requiredArticle == Model!.CurrentArticle.ToLower();
+            Model!.LearningSession[Model.CurrentIndex].AnsweredCorrectly = AlertIsCorrect;
+            
+            ShowAlert = true;
+            AlertMessageText = "Not quite there... try once more.";
+            if(AlertIsCorrect) {
+                AlertMessageText = "You are correct!";
+                NextNoun();
+            } 
+            
+            await Task.Delay(2000);
+            
+            ShowAlert = false;
         
             StateHasChanged();
+        }
+
+        private void NextNoun()
+        {
+            if (Model!.CurrentIndex < Model.LearningSession.Length - 1)
+            {
+                Model!.CurrentIndex++;
+                return;
+            }
+            
+            // send results back to the server...
+            
+            // ask the user if they want to go for another round, or summarise
+            // FetchNewLearningSessionData();
         }
 
         protected override async Task OnInitializedAsync()
