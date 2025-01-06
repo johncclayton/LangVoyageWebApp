@@ -1,0 +1,25 @@
+﻿@page "/sentences"
+
+<h3 class="mt-4">Sentence Exercises</h3>
+
+<p class="mb-4">Fill in the gaps with the appropriate articles, nouns, verbs and so on.</p>
+
+<div class="container my-5">
+    <div>TBD</div>
+</div>
+
+@code {
+    private LanguageService LangService { get; set; }
+
+    public Sentences(LanguageService langService)
+    {
+        LangService = langService;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+
+    }
+
+
+}

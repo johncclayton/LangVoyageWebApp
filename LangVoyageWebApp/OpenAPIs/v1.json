@@ -13,6 +13,38 @@
     }
   ],
   "paths": {
+    "/learn/v1/{userId}/progress": {
+      "get": {
+        "tags": [
+          "LangVoyageServer"
+        ],
+        "description": "Returns a progress record which can help the UI to show how far through the content / level that the user is.",
+        "operationId": "GetLearningProgress",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LearningProgressResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/learn/v1/{userId}/noun": {
       "get": {
         "tags": [
@@ -202,6 +234,34 @@
           },
           "level": {
             "type": "string"
+          }
+        }
+      },
+      "LearningProgressResponse": {
+        "required": [
+          "username",
+          "languageLevel",
+          "totalNouns",
+          "nounProgresses"
+        ],
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string"
+          },
+          "languageLevel": {
+            "type": "string"
+          },
+          "totalNouns": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "nounProgresses": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            }
           }
         }
       },

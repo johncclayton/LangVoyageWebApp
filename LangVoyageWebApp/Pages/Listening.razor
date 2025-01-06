@@ -1,0 +1,25 @@
+﻿@page "/listening"
+
+<h3 class="mt-4">Listening Exercises</h3>
+
+<p class="mb-4">Instructions go here....</p>
+
+<div class="container my-5">
+    <div>TBD</div>
+</div>
+
+@code {
+    private LanguageService LangService { get; set; }
+
+    public Listening(LanguageService langService)
+    {
+        LangService = langService;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+
+    }
+
+
+}

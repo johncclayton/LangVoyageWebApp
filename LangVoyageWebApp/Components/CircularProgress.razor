@@ -23,7 +23,11 @@
      align-items:center;
      justify-content:center;
      ">
-    @if (!string.IsNullOrEmpty(InnerText))
+    @if (IconContent != null)
+    {
+        @IconContent
+    }
+    else if (!string.IsNullOrEmpty(InnerText))
     {
         <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">@InnerText</span>
     }
@@ -54,6 +58,9 @@
 
     [Parameter]
     public int Thickness { get; set; } = 10;
+
+    [Parameter]
+    public RenderFragment? IconContent { get; set; }
 
     [Parameter]
     public EventCallback OnClickCallback { get; set; }

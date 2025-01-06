@@ -6,27 +6,68 @@
 
 <h1>Learning Center</h1>
 
-Select the exercises you want to use.
 <br/>
 
-<NavLink href="/nouns">Lets practise nouns</NavLink>
-<br/>
-<NavLink href="/sentences">No way, I love sentences</NavLink>
+<div class="d-flex justify-content-around">
+    <CircularProgress Progress="75"
+    Size="150"
+    FillColor="blue"
+    BackgroundColor="#eee"
+    InnerText="Nouns"
+    OnClickCallback="@(() => NavigationManager.NavigateTo("/nouns"))">
+        <IconContent>
+            <i class="fa-solid fa-book"></i>
+        </IconContent>
+    </CircularProgress>
 
-<CircularProgress Progress="75"
-                  Size="150"
-                  FillColor="blue"
-                  BackgroundColor="#eee"
-                  InnerText="Nouns"
-                  OnClickCallback="@(() => NavigationManager.NavigateTo("/nouns"))"/>
+    <CircularProgress Progress="15"
+    Size="150"
+    FillColor="green"
+    BackgroundColor="#eee"
+    InnerText="Sentences"
+    OnClickCallback="@(() => NavigationManager.NavigateTo("/sentences"))">
+        <IconContent>
+            <i class="fa-solid fa-pen"></i>
+        </IconContent>
+    </CircularProgress>
 
-<CircularProgress Progress="15"
-                  Size="150"
-                  FillColor="green"
-                  BackgroundColor="#eee"
-                  InnerText="Sentences"
-                  OnClickCallback="@(() => NavigationManager.NavigateTo("/sentences"))"/>
+    <CircularProgress Progress="50"
+    Size="150"
+    FillColor="red"
+    BackgroundColor="#eee"
+    InnerText="Speaking"
+    OnClickCallback="@(() => NavigationManager.NavigateTo("/speaking"))">
+        <IconContent>
+            <i class="fa-solid fa-microphone"></i>
+        </IconContent>
+    </CircularProgress>
+
+    <CircularProgress Progress="30"
+    Size="150"
+    FillColor="orange"
+    BackgroundColor="#eee"
+    InnerText="Listening"
+    OnClickCallback="@(() => NavigationManager.NavigateTo("/listening"))">
+        <IconContent>
+            <i class="fa-solid fa-headphones"></i>
+        </IconContent>
+    </CircularProgress>
+</div>
 
 @code {
+
+    public Home(LanguageService nounService)
+    {
+        LangService = nounService;
+    }
+
+    public LanguageService LangService { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // var res = LangService.
+        var res = await LangService.GetLearningProgressAsync(1);
+
+    }
 
 }
