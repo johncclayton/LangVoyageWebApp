@@ -113,16 +113,16 @@ code {
     text-align: start;
 }
 
-/*.nav-link {*/
-/*    !*text-align: center;*!*/
-/*    padding: 10px;*/
-/*    transition: all 0.3s ease;*/
-/*}*/
+.nav-link {
+    /*text-align: center;*/
+    padding: 10px;
+    transition: all 0.3s ease;
+}
 
-/*.nav-link:hover {*/
-/*    background-color: rgba(255, 255, 255, 0.1);*/
-/*}*/
+.nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
 
-/*.nav-link.active {*/
-/*    background-color: rgba(255, 255, 255, 0.2);*/
-/*}*/
+.nav-link.active {
+    background-color: rgba(255, 255, 255, 0.2);
+}

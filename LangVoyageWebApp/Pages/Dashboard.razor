@@ -9,14 +9,16 @@
 <br/>
 
 <div class="d-flex justify-content-around">
-    <CircularProgress Progress="75"
+    <CircularProgress Progress="@GetNounProgress()"
     Size="150"
     FillColor="blue"
     BackgroundColor="#eee"
-    InnerText="Nouns"
+    InnerText="@NounOverviewText"
     OnClickCallback="@(() => NavigationManager.NavigateTo("/nouns"))">
         <IconContent>
             <i class="fa-solid fa-book"></i>
+            <div>@NounOverviewText</div>
+            Blah blah blah
         </IconContent>
     </CircularProgress>
 
@@ -56,18 +58,39 @@
 
 @code {
 
-    public Home(LanguageService nounService)
+    public Dashboard(LanguageService nounService)
     {
         LangService = nounService;
     }
 
-    public LanguageService LangService { get; set; }
+    private LanguageService LangService { get; set; }
+    private LearningProgressResponse? LearningProgress { get; set; }
+    private string NounOverviewText
+    {
+        get
+        {
+            if (LearningProgress == null)
+            {
+                return "Nouns";
+            }
+
+            return $"Nouns: {LearningProgress.NounProgresses.Sum()} / {LearningProgress.TotalNouns}";
+        }
+    }
 
     protected override async Task OnInitializedAsync()
     {
-        // var res = LangService.
-        var res = await LangService.GetLearningProgressAsync(1);
+        LearningProgress = await LangService.GetLearningProgressAsync(1);
+    }
 
+    private int GetNounProgress()
+    {
+        if (LearningProgress == null)
+        {
+            return 0;
+        }
+
+        return (int)((float)LearningProgress.NounProgresses.Sum() / LearningProgress.TotalNouns);
     }
 
 }

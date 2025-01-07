@@ -185,6 +185,9 @@ public class SqliteStorageService : IStorageService
             throw new Exception("No user profile found.");
         }
 
+        var nounsAtThisLevelCount = await _context.Nouns
+            .CountAsync(n => n.Level == user.LanguageLevel);
+
         var progress = await _context.NounProgressView
             .Where(p => p.UserProfileId == userId && p.NounLevel == user.LanguageLevel)
             .GroupBy(p => p.TimeFrame)
@@ -195,7 +198,7 @@ public class SqliteStorageService : IStorageService
         {
             Username = user.Username ?? throw new InvalidOperationException(),
             LanguageLevel = user.LanguageLevel ?? throw new InvalidOperationException(),
-            TotalNouns = progress.Sum(p => p.Count),
+            TotalNouns = nounsAtThisLevelCount,
             NounProgresses = new int[progress.Max(p => p.TimeFrame) + 1]
         };
         
