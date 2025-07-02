@@ -109,7 +109,8 @@ public class EndpointIntegrationTests : IClassFixture<TestWebApplicationFactory<
         var client = _factory.CreateClient();
         var response = await client.GetAsync("/user/v1/999");
         
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode); // Service returns null, not 404 - this is a potential improvement
+        // The endpoint correctly returns 404 for non-existent users
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
     #endregion
