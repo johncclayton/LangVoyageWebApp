@@ -15,7 +15,7 @@ public static class LearningEndpointV1
             })
             .WithDescription("Returns a progress record which can help the UI to show how far through the content / level that the user is.")
             .WithName("GetLearningProgress")
-            .WithOpenApi();
+            ;
         
         group.MapGet("/{userId:int}/noun", async (IStorageService svc, int userId) =>
             {
@@ -23,7 +23,7 @@ public static class LearningEndpointV1
             })
             .WithDescription("Returns a series of Nouns for the user to practise, using spaced repetition to determine which nouns are to be returned first.")
             .WithName("GetPractiseNouns")
-            .WithOpenApi();
+            ;
 
         // - update progress with correct/false (patch)
         group.MapPut("/{id:int}/noun", async (IStorageService srv, int id, NounProgressRequest req) =>
@@ -34,7 +34,7 @@ public static class LearningEndpointV1
             .WithDescription(
                 "Updates an existing progress record for the user specified by id+nounId in the NounProgressRequest object, returns a NoneProgress object.")
             .WithName("UpdateNounProgress")
-            .WithOpenApi();
+            ;
         
         group.MapDelete("/{userId:int}/noun", async (IStorageService srv, int userId) =>
             {
@@ -44,7 +44,7 @@ public static class LearningEndpointV1
             .WithDescription("Deletes all progress record for the user specified by id.  Be careful, not reversible.")
             .WithName("DeleteAllPractiseProgress")
             .Produces(204)
-            .WithOpenApi();
+            ;
 
         return group;
     }

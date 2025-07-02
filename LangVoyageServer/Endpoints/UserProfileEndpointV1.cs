@@ -20,7 +20,7 @@ public static class UserProfileEndpointV1
             })
             .WithDescription("Returns a user by id.")
             .WithName("GetUserById")
-            .WithOpenApi();
+            ;
 
         group.MapPatch("/{id:int}",
                 async (IValidator<UpdateUserRequest> validator, IStorageService srv, int id, UpdateUserRequest req) =>
@@ -41,7 +41,7 @@ public static class UserProfileEndpointV1
                 })
             .WithDescription("Updates the language level and/or username of a user")
             .WithName("UpdateUserById")
-            .WithOpenApi();
+            ;
 
         return group;
     }
