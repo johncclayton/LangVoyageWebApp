@@ -4,6 +4,10 @@ namespace TestServer;
 
 public class TestModels
 {
+    /// <summary>
+    /// Verifies that LanguageNoun model properties can be assigned and retrieved correctly.
+    /// This test ensures the core noun data structure maintains integrity for German language learning content.
+    /// </summary>
     [Fact]
     public void LanguageNoun_PropertiesSetCorrectly()
     {
@@ -27,6 +31,10 @@ public class TestModels
         Assert.Equal("A1", noun.Level);
     }
 
+    /// <summary>
+    /// Verifies that UserProfile model properties can be assigned and retrieved correctly.
+    /// This test ensures the user profile data structure maintains integrity for user account management.
+    /// </summary>
     [Fact]
     public void UserProfile_PropertiesSetCorrectly()
     {
@@ -44,6 +52,10 @@ public class TestModels
         Assert.Equal("B2", user.LanguageLevel);
     }
 
+    /// <summary>
+    /// Verifies that NounProgress model properties can be assigned and retrieved correctly including DateTime values.
+    /// This test ensures the progress tracking data structure maintains integrity for spaced repetition algorithm data.
+    /// </summary>
     [Fact]
     public void NounProgress_PropertiesSetCorrectly()
     {
@@ -66,6 +78,10 @@ public class TestModels
         Assert.Equal(lastPractised, progress.LastPractised);
     }
 
+    /// <summary>
+    /// Verifies that LanguageNounProgressView model properties can be assigned and retrieved correctly.
+    /// This test ensures the comprehensive view data structure maintains integrity for combined noun and progress information.
+    /// </summary>
     [Fact]
     public void LanguageNounProgressView_PropertiesSetCorrectly()
     {
@@ -102,6 +118,10 @@ public class TestModels
         Assert.Equal(lastPractised, view.LastPractised);
     }
 
+    /// <summary>
+    /// Verifies that LanguageNoun model supports all valid CEFR language levels (A1-C2).
+    /// This parameterized test ensures comprehensive support for the European language proficiency framework standards.
+    /// </summary>
     [Theory]
     [InlineData("A1")]
     [InlineData("A2")]
@@ -124,6 +144,10 @@ public class TestModels
         Assert.Equal(level, noun.Level);
     }
 
+    /// <summary>
+    /// Verifies that LanguageNoun model supports all German definite articles (der, die, das).
+    /// This parameterized test ensures comprehensive support for German grammar fundamentals in noun storage.
+    /// </summary>
     [Theory]
     [InlineData("der")]
     [InlineData("die")]
@@ -143,6 +167,10 @@ public class TestModels
         Assert.Equal(article, noun.Article);
     }
 
+    /// <summary>
+    /// Verifies that NounProgress TimeFrame property can be set to zero for initial practice state.
+    /// This test ensures proper support for the baseline state in the spaced repetition learning algorithm.
+    /// </summary>
     [Fact]
     public void NounProgress_TimeFrame_CanBeZero()
     {
@@ -159,6 +187,10 @@ public class TestModels
         Assert.Equal(0, progress.TimeFrame);
     }
 
+    /// <summary>
+    /// Verifies that NounProgress TimeFrame property can be set to positive values for advanced practice states.
+    /// This test ensures proper support for progression levels in the spaced repetition learning algorithm.
+    /// </summary>
     [Fact]
     public void NounProgress_TimeFrame_CanBePositive()
     {

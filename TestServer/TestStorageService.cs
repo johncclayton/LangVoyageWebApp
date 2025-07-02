@@ -36,6 +36,10 @@ public class TestStorageService : IClassFixture<TestWebApplicationFactory<Progra
         }
     }
 
+    /// <summary>
+    /// Verifies that GetUserAsync returns a valid user when provided with an existing user ID.
+    /// This test ensures the basic user retrieval functionality works correctly for valid inputs.
+    /// </summary>
     [Fact]
     public async Task GetUserAsync_WithValidId_ReturnsUser()
     {
@@ -53,6 +57,10 @@ public class TestStorageService : IClassFixture<TestWebApplicationFactory<Progra
         Assert.NotNull(result.LanguageLevel);
     }
 
+    /// <summary>
+    /// Verifies that GetUserAsync returns null when provided with a non-existent user ID.
+    /// This test ensures proper handling of invalid user ID scenarios and prevents system errors.
+    /// </summary>
     [Fact]
     public async Task GetUserAsync_WithInvalidId_ReturnsNull()
     {
@@ -67,6 +75,10 @@ public class TestStorageService : IClassFixture<TestWebApplicationFactory<Progra
         Assert.Null(result);
     }
 
+    /// <summary>
+    /// Verifies that UpsertUserProfileAsync returns null when both username and language level are null.
+    /// This test ensures the service handles incomplete update requests gracefully without making changes.
+    /// </summary>
     [Fact]
     public async Task UpsertUserProfileAsync_WithNullRequest_ReturnsNull()
     {
@@ -82,6 +94,10 @@ public class TestStorageService : IClassFixture<TestWebApplicationFactory<Progra
         Assert.Null(result);
     }
 
+    /// <summary>
+    /// Verifies that UpsertUserProfileAsync successfully updates user profile data when provided with valid information.
+    /// This test ensures the core user profile update functionality works correctly with complete data.
+    /// </summary>
     [Fact]
     public async Task UpsertUserProfileAsync_WithValidData_UpdatesUser()
     {
@@ -103,6 +119,10 @@ public class TestStorageService : IClassFixture<TestWebApplicationFactory<Progra
         Assert.Equal("B1", result.LanguageLevel);
     }
 
+    /// <summary>
+    /// Verifies that GetNewPractiseNounsAsync throws an exception when provided with an invalid user ID.
+    /// This test ensures proper error handling for non-existent users attempting to access learning content.
+    /// </summary>
     [Fact]
     public async Task GetNewPractiseNounsAsync_WithInvalidUserId_ThrowsException()
     {
@@ -115,6 +135,10 @@ public class TestStorageService : IClassFixture<TestWebApplicationFactory<Progra
             await service.GetNewPractiseNounsAsync(99999));
     }
 
+    /// <summary>
+    /// Verifies that GetNewPractiseNounsAsync returns valid noun data when provided with a valid user ID.
+    /// This test ensures that users can successfully retrieve practice nouns with proper data structure.
+    /// </summary>
     [Fact]
     public async Task GetNewPractiseNounsAsync_WithValidUserId_ReturnsNouns()
     {
@@ -136,6 +160,10 @@ public class TestStorageService : IClassFixture<TestWebApplicationFactory<Progra
         }
     }
 
+    /// <summary>
+    /// Verifies that UpsertNounProgressAsync throws an exception when provided with an invalid user ID.
+    /// This test ensures proper error handling when attempting to update progress for non-existent users.
+    /// </summary>
     [Fact]
     public async Task UpsertNounProgressAsync_WithInvalidUserId_ThrowsException()
     {
@@ -148,6 +176,10 @@ public class TestStorageService : IClassFixture<TestWebApplicationFactory<Progra
             await service.UpsertNounProgressAsync(99999, 1, true));
     }
 
+    /// <summary>
+    /// Verifies that UpsertNounProgressAsync creates new progress record with TimeFrame=1 when no previous progress exists.
+    /// This test ensures proper initialization of the spaced repetition learning algorithm for new nouns.
+    /// </summary>
     [Fact]
     public async Task UpsertNounProgressAsync_CreatesNewProgress_WhenNoneExists()
     {
@@ -172,6 +204,10 @@ public class TestStorageService : IClassFixture<TestWebApplicationFactory<Progra
         Assert.Equal(1, result.TimeFrame);
     }
 
+    /// <summary>
+    /// Verifies that DeleteNounProgressAsync successfully removes progress records and returns the count of deleted items.
+    /// This test ensures proper cleanup functionality for resetting individual noun progress.
+    /// </summary>
     [Fact]
     public async Task DeleteNounProgressAsync_RemovesProgress()
     {
@@ -195,6 +231,10 @@ public class TestStorageService : IClassFixture<TestWebApplicationFactory<Progra
         Assert.Null(progress);
     }
 
+    /// <summary>
+    /// Verifies that DeleteNounProgressAsync returns zero when attempting to delete non-existent progress.
+    /// This test ensures graceful handling of delete operations on already removed or never-created progress records.
+    /// </summary>
     [Fact]
     public async Task DeleteNounProgressAsync_WithNonExistentProgress_ReturnsZero()
     {
@@ -209,6 +249,10 @@ public class TestStorageService : IClassFixture<TestWebApplicationFactory<Progra
         Assert.Equal(0, deleteCount);
     }
 
+    /// <summary>
+    /// Verifies that GetLearningProgress returns comprehensive learning statistics including user info and progress distribution.
+    /// This test ensures the learning dashboard functionality works correctly and provides meaningful analytics to users.
+    /// </summary>
     [Fact]
     public async Task GetLearningProgress_ReturnsValidProgress()
     {

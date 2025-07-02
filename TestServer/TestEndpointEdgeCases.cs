@@ -38,6 +38,10 @@ public class TestEndpointEdgeCases : IClassFixture<TestWebApplicationFactory<Pro
         }
     }
 
+    /// <summary>
+    /// Verifies that GET /user/v1/{id} returns 404 Not Found when requesting a non-existent user.
+    /// This test ensures proper error handling for invalid user ID requests in the user API endpoint.
+    /// </summary>
     [Fact]
     public async Task GetUser_WithNonExistentId_ReturnsNotFound()
     {
@@ -51,6 +55,10 @@ public class TestEndpointEdgeCases : IClassFixture<TestWebApplicationFactory<Pro
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
+    /// <summary>
+    /// Verifies that PATCH /user/v1/{id} returns 400 Bad Request when sent with empty JSON body.
+    /// This test ensures proper input validation and error handling for malformed update requests.
+    /// </summary>
     [Fact]
     public async Task UpdateUser_WithEmptyRequestBody_ReturnsBadRequest()
     {
@@ -65,6 +73,10 @@ public class TestEndpointEdgeCases : IClassFixture<TestWebApplicationFactory<Pro
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
+    /// <summary>
+    /// Verifies that PATCH /user/v1/{id} returns 400 Bad Request when sent with malformed JSON.
+    /// This test ensures robust input validation and prevents processing of corrupted request data.
+    /// </summary>
     [Fact]
     public async Task UpdateUser_WithInvalidJson_ReturnsBadRequest()
     {
@@ -79,6 +91,10 @@ public class TestEndpointEdgeCases : IClassFixture<TestWebApplicationFactory<Pro
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
+    /// <summary>
+    /// Verifies that PATCH /user/v1/{id} returns 404 Not Found when attempting to update a non-existent user.
+    /// This test ensures proper error handling for update requests targeting invalid user IDs.
+    /// </summary>
     [Fact]
     public async Task UpdateUser_WithNonExistentUser_ReturnsNotFound()
     {
@@ -98,6 +114,10 @@ public class TestEndpointEdgeCases : IClassFixture<TestWebApplicationFactory<Pro
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
+    /// <summary>
+    /// Verifies that GET /learn/v1/{userId}/noun returns 500 Internal Server Error for non-existent users.
+    /// This test ensures proper error handling when practice noun requests are made for invalid user IDs.
+    /// </summary>
     [Fact]
     public async Task GetPractiseNouns_WithNonExistentUser_ReturnsInternalServerError()
     {
@@ -111,6 +131,10 @@ public class TestEndpointEdgeCases : IClassFixture<TestWebApplicationFactory<Pro
         Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
     }
 
+    /// <summary>
+    /// Verifies that PUT /learn/v1/{userId}/noun returns 400 Bad Request when sent with malformed JSON.
+    /// This test ensures robust input validation for noun progress update requests.
+    /// </summary>
     [Fact]
     public async Task UpdateNounProgress_WithInvalidRequest_ReturnsBadRequest()
     {
@@ -125,6 +149,10 @@ public class TestEndpointEdgeCases : IClassFixture<TestWebApplicationFactory<Pro
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
+    /// <summary>
+    /// Verifies that PUT /learn/v1/{userId}/noun returns 500 Internal Server Error for non-existent users.
+    /// This test ensures proper error handling when noun progress updates are attempted for invalid user IDs.
+    /// </summary>
     [Fact]
     public async Task UpdateNounProgress_WithNonExistentUser_ReturnsInternalServerError()
     {
@@ -144,6 +172,10 @@ public class TestEndpointEdgeCases : IClassFixture<TestWebApplicationFactory<Pro
         Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
     }
 
+    /// <summary>
+    /// Verifies that GET /learn/v1/{userId}/progress returns 500 Internal Server Error for non-existent users.
+    /// This test ensures proper error handling when learning progress is requested for invalid user IDs.
+    /// </summary>
     [Fact]
     public async Task GetLearningProgress_WithNonExistentUser_ReturnsInternalServerError()
     {
@@ -157,6 +189,10 @@ public class TestEndpointEdgeCases : IClassFixture<TestWebApplicationFactory<Pro
         Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
     }
 
+    /// <summary>
+    /// Verifies that GET /user/v1/{id} returns 404 Not Found for invalid user ID values including negative numbers and zero.
+    /// This parameterized test ensures comprehensive validation of user ID parameters across edge cases.
+    /// </summary>
     [Theory]
     [InlineData(-1)]
     [InlineData(0)]
@@ -172,6 +208,10 @@ public class TestEndpointEdgeCases : IClassFixture<TestWebApplicationFactory<Pro
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
+    /// <summary>
+    /// Verifies that PATCH /user/v1/{id} successfully updates user when only username is provided.
+    /// This test ensures partial update functionality works correctly for username-only changes.
+    /// </summary>
     [Fact]
     public async Task UpdateUser_WithOnlyUsername_UpdatesSuccessfully()
     {
@@ -196,6 +236,10 @@ public class TestEndpointEdgeCases : IClassFixture<TestWebApplicationFactory<Pro
         Assert.Equal("only_username_test", user.Username);
     }
 
+    /// <summary>
+    /// Verifies that PATCH /user/v1/{id} successfully updates user when only language level is provided.
+    /// This test ensures partial update functionality works correctly for language level-only changes.
+    /// </summary>
     [Fact]
     public async Task UpdateUser_WithOnlyLanguageLevel_UpdatesSuccessfully()
     {
@@ -220,6 +264,10 @@ public class TestEndpointEdgeCases : IClassFixture<TestWebApplicationFactory<Pro
         Assert.Equal("B2", user.LanguageLevel);
     }
 
+    /// <summary>
+    /// Verifies that DELETE /learn/v1/{userId}/noun returns 204 No Content when deleting all noun progress.
+    /// This test ensures proper response status for bulk progress deletion operations.
+    /// </summary>
     [Fact]
     public async Task DeleteAllNounProgress_ReturnsNoContent()
     {
@@ -233,6 +281,10 @@ public class TestEndpointEdgeCases : IClassFixture<TestWebApplicationFactory<Pro
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
     }
 
+    /// <summary>
+    /// Verifies that GET /learn/v1/{userId}/noun returns valid noun data with proper structure and content.
+    /// This test ensures the practice noun endpoint provides correctly formatted learning content.
+    /// </summary>
     [Fact]
     public async Task GetPractiseNouns_ReturnsValidNouns()
     {
@@ -260,6 +312,10 @@ public class TestEndpointEdgeCases : IClassFixture<TestWebApplicationFactory<Pro
         }
     }
 
+    /// <summary>
+    /// Verifies that PUT /learn/v1/{userId}/noun successfully processes valid noun progress update requests.
+    /// This test ensures the progress update endpoint correctly handles valid practice session data.
+    /// </summary>
     [Fact]
     public async Task UpdateNounProgress_WithValidRequest_ReturnsSuccess()
     {

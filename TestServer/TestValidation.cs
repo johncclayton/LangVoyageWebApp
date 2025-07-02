@@ -5,6 +5,10 @@ namespace TestServer;
 
 public class TestValidation
 {
+    /// <summary>
+    /// Verifies that UpdateUserRequestValidator accepts valid language levels without validation errors.
+    /// This test ensures basic validation functionality works for standard A1-C2 language level inputs.
+    /// </summary>
     [Fact]
     public void UpdateUserRequestValidator_WithValidLanguageLevel_PassesValidation()
     {
@@ -23,6 +27,10 @@ public class TestValidation
         result.ShouldNotHaveAnyValidationErrors();
     }
 
+    /// <summary>
+    /// Verifies that UpdateUserRequestValidator accepts all valid CEFR language levels (A1-C2).
+    /// This parameterized test ensures comprehensive coverage of the European language proficiency framework standards.
+    /// </summary>
     [Theory]
     [InlineData("A1")]
     [InlineData("A2")]
@@ -47,6 +55,10 @@ public class TestValidation
         result.ShouldNotHaveAnyValidationErrors();
     }
 
+    /// <summary>
+    /// Verifies that UpdateUserRequestValidator rejects invalid language level values and empty strings.
+    /// This parameterized test ensures proper input validation prevents malformed data from entering the system.
+    /// </summary>
     [Theory]
     [InlineData("C0")]
     [InlineData("D1")]
@@ -70,6 +82,10 @@ public class TestValidation
         result.ShouldHaveValidationErrorFor(x => x.LanguageLevel);
     }
 
+    /// <summary>
+    /// Verifies that UpdateUserRequestValidator allows null language level values for optional updates.
+    /// This test ensures partial profile updates are supported without requiring all fields to be specified.
+    /// </summary>
     [Fact]
     public void UpdateUserRequestValidator_WithNullLanguageLevel_PassesValidation()
     {
@@ -88,6 +104,10 @@ public class TestValidation
         result.ShouldNotHaveAnyValidationErrors();
     }
 
+    /// <summary>
+    /// Verifies that UpdateUserRequestValidator accepts language levels in both uppercase and lowercase formats.
+    /// This parameterized test ensures case-insensitive validation for better user experience and data consistency.
+    /// </summary>
     [Theory]
     [InlineData("a1")]  // lowercase
     [InlineData("A1")]  // uppercase
@@ -110,6 +130,10 @@ public class TestValidation
         result.ShouldNotHaveAnyValidationErrors();
     }
 
+    /// <summary>
+    /// Verifies that NounProgressRequest model properties can be set and retrieved correctly.
+    /// This test ensures the request model maintains data integrity for noun practice progress tracking.
+    /// </summary>
     [Fact]
     public void NounProgressRequest_PropertiesSetCorrectly()
     {
@@ -125,6 +149,10 @@ public class TestValidation
         Assert.True(request.AnswerWasCorrect);
     }
 
+    /// <summary>
+    /// Verifies that LearningProgressResponse model properties can be set and retrieved correctly.
+    /// This test ensures the response model maintains data integrity for learning progress dashboard functionality.
+    /// </summary>
     [Fact]
     public void LearningProgressResponse_PropertiesSetCorrectly()
     {
