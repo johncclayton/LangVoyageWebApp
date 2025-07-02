@@ -1,6 +1,7 @@
 ﻿@page "/"
 @using LangVoyageWebApp.Components
 @inject NavigationManager NavigationManager
+@inject LanguageService LangService
 
 <PageTitle>Learning Center</PageTitle>
 
@@ -56,12 +57,6 @@
 
 @code {
 
-    public Dashboard(LanguageService nounService)
-    {
-        LangService = nounService;
-    }
-
-    private LanguageService LangService { get; set; }
     private LearningProgressResponse? LearningProgress { get; set; }
     private string NounOverviewText
     {
