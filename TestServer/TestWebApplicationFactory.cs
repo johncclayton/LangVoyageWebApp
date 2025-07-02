@@ -1,4 +1,5 @@
 ﻿using System.Data.Common;
+using LangVoyageServer.Configuration;
 using LangVoyageServer.Database;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.Sqlite;
@@ -13,7 +14,7 @@ public class TestWebApplicationFactory<TProgram>
     {
         builder.ConfigureServices(services =>
         {
-            Environment.SetEnvironmentVariable("IS_TEST_ENVIRONMENT", "true");
+            Environment.SetEnvironmentVariable(AppConstants.Environment.TestEnvironmentVariable, "true");
             
             var descriptor = services.SingleOrDefault(d => 
                 d.ServiceType == typeof(DbContextOptions<LangServerDbContext>));

@@ -10,13 +10,18 @@ public static class UserProfileEndpointV1
     {
         group.MapGet("/{id:int}", async (IStorageService srv, int id) =>
             {
+                if (id <= 0)
+                {
+                    return Results.BadRequest("User ID must be a positive integer");
+                }
+                
                 var user = await srv.GetUserAsync(id);
                 if (user == null)
                 {
                     return Results.NotFound();
                 }
 
-                return TypedResults.Ok(await srv.GetUserAsync(id));
+                return TypedResults.Ok(user);
             })
             .WithDescription("Returns a user by id.")
             .WithName("GetUserById")
@@ -25,6 +30,11 @@ public static class UserProfileEndpointV1
         group.MapPatch("/{id:int}",
                 async (IValidator<UpdateUserRequest> validator, IStorageService srv, int id, UpdateUserRequest req) =>
                 {
+                    if (id <= 0)
+                    {
+                        return Results.BadRequest("User ID must be a positive integer");
+                    }
+                    
                     var validResult = await validator.ValidateAsync(req);
                     if (!validResult.IsValid)
                     {

@@ -1,7 +1,9 @@
 using System.Net;
 using FluentValidation;
+using LangVoyageServer.Configuration;
 using LangVoyageServer.Database;
 using LangVoyageServer.Endpoints;
+using LangVoyageServer.Middleware;
 using LangVoyageServer.Models;
 using LangVoyageServer.Requests;
 using Microsoft.AspNetCore.Authentication.Negotiate;
@@ -17,7 +19,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 builder.Services.AddValidatorsFromAssemblyContaining<UpdateUserRequestValidator>();
 
-var corsPolicyName = "ApplicationCorsPolicy_BannanasAreGreat_ThisNameCanBeAnything";
+var corsPolicyName = AppConstants.Cors.PolicyName;
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(
@@ -40,6 +42,9 @@ builder.Services.AddScoped<IStorageService, SqliteStorageService>();
 
 var app = builder.Build();
 
+// Add global exception handling
+app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -51,13 +56,13 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseCors(corsPolicyName);
 
-app.MapGroup("/learn/v1").MapLearningV1();
-app.MapGroup("/user/v1").MapUserProfileV1();
+app.MapGroup(AppConstants.Api.Routes.Learning).MapLearningV1();
+app.MapGroup(AppConstants.Api.Routes.UserProfile).MapUserProfileV1();
 
 // IS_TEST_ENVIRONMENT is set in the TestWebApplicationFactory, it's "true" when 
 // this system is being integration tested - in which case we DO NOT run the seeding
 // of the database.
-if (Environment.GetEnvironmentVariable("IS_TEST_ENVIRONMENT") == null)
+if (Environment.GetEnvironmentVariable(AppConstants.Environment.TestEnvironmentVariable) == null)
 {
     if (app.Environment.IsDevelopment())
     {

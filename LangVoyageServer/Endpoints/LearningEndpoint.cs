@@ -11,6 +11,11 @@ public static class LearningEndpointV1
     {
         group.MapGet("/{userId:int}/progress", async (IStorageService svc, int userId) =>
             {
+                if (userId <= 0)
+                {
+                    return BadRequest("User ID must be a positive integer");
+                }
+                
                 return Ok(await svc.GetLearningProgress(userId));
             })
             .WithDescription("Returns a progress record which can help the UI to show how far through the content / level that the user is.")
@@ -19,6 +24,11 @@ public static class LearningEndpointV1
         
         group.MapGet("/{userId:int}/noun", async (IStorageService svc, int userId) =>
             {
+                if (userId <= 0)
+                {
+                    return BadRequest("User ID must be a positive integer");
+                }
+                
                 return Ok(await svc.GetNewPractiseNounsAsync(userId));
             })
             .WithDescription("Returns a series of Nouns for the user to practise, using spaced repetition to determine which nouns are to be returned first.")
@@ -28,20 +38,35 @@ public static class LearningEndpointV1
         // - update progress with correct/false (patch)
         group.MapPut("/{id:int}/noun", async (IStorageService srv, int id, NounProgressRequest req) =>
             {
+                if (id <= 0)
+                {
+                    return BadRequest("User ID must be a positive integer");
+                }
+                
+                if (req.NounId <= 0)
+                {
+                    return BadRequest("Noun ID must be a positive integer");
+                }
+                
                 var result = await srv.UpsertNounProgressAsync(id, req.NounId, req.AnswerWasCorrect);
                 return Ok(result);
             })
             .WithDescription(
-                "Updates an existing progress record for the user specified by id+nounId in the NounProgressRequest object, returns a NoneProgress object.")
+                "Updates an existing progress record for the user specified by id+nounId in the NounProgressRequest object, returns a NounProgress object.")
             .WithName("UpdateNounProgress")
             .WithOpenApi();
         
         group.MapDelete("/{userId:int}/noun", async (IStorageService srv, int userId) =>
             {
+                if (userId <= 0)
+                {
+                    return BadRequest("User ID must be a positive integer");
+                }
+                
                 await srv.DeleteAllNounProgressAsync(userId);
                 return Results.NoContent();
             })
-            .WithDescription("Deletes all progress record for the user specified by id.  Be careful, not reversible.")
+            .WithDescription("Deletes all progress records for the user specified by id. Be careful, not reversible.")
             .WithName("DeleteAllPractiseProgress")
             .Produces(204)
             .WithOpenApi();

@@ -1,4 +1,6 @@
-﻿using LangVoyageServer.Models;
+﻿using LangVoyageServer.Configuration;
+using LangVoyageServer.Exceptions;
+using LangVoyageServer.Models;
 using LangVoyageServer.Requests;
 using Microsoft.EntityFrameworkCore;
 
@@ -21,24 +23,45 @@ public class SqliteStorageService : IStorageService
             .OrderBy(n => n.Noun)
             .ToList();
 
-        // for each, lookup - if its there just update otherwise create. 
+        // Get all existing nouns in one query for better performance
+        var nounNames = uniqueSortedByNoun.Select(n => n.Noun).ToList();
+        var existingNouns = await _context.Nouns
+            .Where(n => nounNames.Contains(n.Noun))
+            .ToDictionaryAsync(n => n.Noun, n => n);
+
+        var nounsToAdd = new List<LanguageNoun>();
+        var nounsToUpdate = new List<LanguageNoun>();
+
         foreach (var singleNoun in uniqueSortedByNoun)
         {
-            var existingNoun = _context.Nouns.FirstOrDefault(n => n.Noun == singleNoun.Noun);
-            if (existingNoun != null)
+            if (existingNouns.TryGetValue(singleNoun.Noun, out var existingNoun))
             {
                 existingNoun.Plural = singleNoun.Plural;
-                _context.Nouns.Update(existingNoun);
+                nounsToUpdate.Add(existingNoun);
             }
             else
             {
-                _context.Nouns.Add(singleNoun);
+                nounsToAdd.Add(singleNoun);
             }
         }
 
-        await _context.SaveChangesAsync();
+        // Batch operations
+        if (nounsToAdd.Count > 0)
+        {
+            _context.Nouns.AddRange(nounsToAdd);
+        }
+        
+        if (nounsToUpdate.Count > 0)
+        {
+            _context.Nouns.UpdateRange(nounsToUpdate);
+        }
 
-        return data.ToList();
+        if (saveImmediately)
+        {
+            await _context.SaveChangesAsync();
+        }
+
+        return uniqueSortedByNoun;
     }
 
     public async Task<UserProfile?> UpsertUserProfileAsync(int id, UpdateUserRequest req)
@@ -82,13 +105,16 @@ public class SqliteStorageService : IStorageService
         return await _context.UserProfiles.FindAsync(userId);
     }
 
-    public async Task<IList<LanguageNoun>> GetNewPractiseNounsAsync(int userId, int limit)
+    public async Task<IList<LanguageNoun>> GetNewPractiseNounsAsync(int userId, int limit = AppConstants.Database.DefaultNounLimit)
     {
         var user = await GetUserAsync(userId);
         if (user == null)
         {
-            throw new Exception("No user profile found.");
+            throw new UserNotFoundException(userId);
         }
+
+        // Ensure limit is within reasonable bounds
+        var safeLimit = Math.Min(limit, AppConstants.Database.MaxNounLimit);
 
         // use the "noun progress view", to simply fetch a series of nouns that are "next" to be practised.
         return await _context.NounProgressView
@@ -98,7 +124,7 @@ public class SqliteStorageService : IStorageService
                 progress => progress.NounId,
                 noun => noun.Id,
                 (progress, noun) => noun)
-            .Take(limit)
+            .Take(safeLimit)
             .ToListAsync();
     }
 
@@ -112,7 +138,7 @@ public class SqliteStorageService : IStorageService
         var user = await GetUserAsync(userId);
         if (user == null)
         {
-            throw new Exception("No user profile found.");
+            throw new UserNotFoundException(userId);
         }
 
         var nounProgress = await _context.NounProgresses.FindAsync([userId, nounId]);
@@ -149,7 +175,6 @@ public class SqliteStorageService : IStorageService
 
     public async Task<int> DeleteNounProgressAsync(int userId, int nounId)
     {
-        await _context.SaveChangesAsync();
         var theProgress = _context.NounProgresses
             .Where(np => np.UserProfileId == userId && np.NounId == nounId);
         _context.NounProgresses.RemoveRange(theProgress.ToArray());
@@ -158,7 +183,7 @@ public class SqliteStorageService : IStorageService
 
     public async Task<IList<NounProgress>> UpdateAllNounProgressAsync(int userId)
     {
-        var allNouns = await GetNewPractiseNounsAsync(userId, 99999);
+        var allNouns = await GetNewPractiseNounsAsync(userId, AppConstants.Database.MaxNounLimit);
 
         var result = new List<NounProgress>();
         foreach (var noun in allNouns)
@@ -182,7 +207,7 @@ public class SqliteStorageService : IStorageService
         var user = await GetUserAsync(userId);
         if (user == null)
         {
-            throw new Exception("No user profile found.");
+            throw new UserNotFoundException(userId);
         }
 
         var nounsAtThisLevelCount = await _context.Nouns
@@ -196,8 +221,8 @@ public class SqliteStorageService : IStorageService
 
         LearningProgressResponse response = new()
         {
-            Username = user.Username ?? throw new InvalidOperationException(),
-            LanguageLevel = user.LanguageLevel ?? throw new InvalidOperationException(),
+            Username = user.Username ?? throw new InvalidOperationException("Username cannot be null"),
+            LanguageLevel = user.LanguageLevel ?? throw new InvalidOperationException("Language level cannot be null"),
             TotalNouns = nounsAtThisLevelCount,
             NounProgresses = new int[progress.Max(p => p.TimeFrame) + 1]
         };

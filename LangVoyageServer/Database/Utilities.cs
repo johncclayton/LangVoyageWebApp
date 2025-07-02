@@ -1,4 +1,5 @@
-﻿using LangVoyageServer.Importer;
+﻿using LangVoyageServer.Configuration;
+using LangVoyageServer.Importer;
 using LangVoyageServer.Requests;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,27 +15,34 @@ public static class Utilities
         var context = services.GetRequiredService<LangServerDbContext>();
         var service = services.GetRequiredService<IStorageService>();
 
-        if(deleteDatabase)
+        if (deleteDatabase)
         {
             await context.Database.EnsureDeletedAsync();
             await context.Database.MigrateAsync();
-        } else {
+        } 
+        else 
+        {
             await context.Database.EnsureCreatedAsync();
         }
         
-        // go get the raw data, and populate the DB. ONLY IF THERE ARE NO ROWS IN THE NOUNS TABLE.
-        if(!context.Nouns.Any())
+        // Populate the DB with data only if there are no existing nouns
+        if (!await context.Nouns.AnyAsync())
         {
             var importer = new DataImporter(context, service);
             await importer.Run();
         }
 
-        await service.UpsertUserProfileAsync(1, new UpdateUserRequest()
-            {
-                Username = "johnclayton",
-                LanguageLevel = "B2"
-            }
-        );
+        // Create default user if not exists
+        var defaultUser = await service.GetUserAsync(1);
+        if (defaultUser == null)
+        {
+            await service.UpsertUserProfileAsync(1, new UpdateUserRequest()
+                {
+                    Username = "johnclayton",
+                    LanguageLevel = "B2"
+                }
+            );
+        }
 
         await context.SaveChangesAsync();
 
