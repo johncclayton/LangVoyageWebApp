@@ -9,8 +9,12 @@ This repository contains a Blazor application using a client-server architecture
 - For state management in the client, prefer built-in Blazor mechanisms (such as cascading parameters or DI services).
 - Follow C# coding conventions: PascalCase for methods and properties, camelCase for local variables, and use explicit access modifiers.
 - When writing sample code, use clear and descriptive names for classes, methods, and variables.
-- Never downgrade my packages to LTS versions or suggest using outdated libraries.
+- Never downgrade my packages to LTS versions or suggest using outdated libraries/packages.
+- NEVER downgrade my dotnet version, the lowest version I use is dotnet 9.0.
 
 Do not generate code that mixes client and server concerns. Always keep UI logic in the client and 
 business/data logic in the server unless explicitly instructed otherwise.
 
+I repeat: 
+* NEVER downgrade my dotnet version to anything lower than 9.0.
+* DO NOT downgrade packages.
