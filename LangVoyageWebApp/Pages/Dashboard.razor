@@ -5,54 +5,55 @@
 
 <PageTitle>Learning Center</PageTitle>
 
-<h1>Learning Center</h1>
+<div class="dashboard-container">
+    <h1>Learning Center</h1>
+    <p class="dashboard-subtitle">Track your language learning progress</p>
 
-<br/>
+    <div class="progress-grid">
+        <CircularProgress Progress="@GetNounProgress()"
+        Size="160"
+        FillColor="var(--primary-color)"
+        BackgroundColor="var(--surface-tertiary)"
+        InnerText="@NounOverviewText"
+        OnClickCallback="@(() => NavigationManager.NavigateTo("/nouns"))">
+            <IconContent>
+                <i class="fa-solid fa-book"></i>
+            </IconContent>
+        </CircularProgress>
 
-<div class="d-flex justify-content-around">
-    <CircularProgress Progress="@GetNounProgress()"
-    Size="150"
-    FillColor="blue"
-    BackgroundColor="#eee"
-    InnerText="@NounOverviewText"
-    OnClickCallback="@(() => NavigationManager.NavigateTo("/nouns"))">
-        <IconContent>
-            <i class="fa-solid fa-book"></i>
-        </IconContent>
-    </CircularProgress>
+        <CircularProgress Progress="15"
+        Size="160"
+        FillColor="var(--secondary-color)"
+        BackgroundColor="var(--surface-tertiary)"
+        InnerText="Sentences"
+        OnClickCallback="@(() => NavigationManager.NavigateTo("/sentences"))">
+            <IconContent>
+                <i class="fa-solid fa-pen"></i>
+            </IconContent>
+        </CircularProgress>
 
-    <CircularProgress Progress="15"
-    Size="150"
-    FillColor="green"
-    BackgroundColor="#eee"
-    InnerText="Sentences"
-    OnClickCallback="@(() => NavigationManager.NavigateTo("/sentences"))">
-        <IconContent>
-            <i class="fa-solid fa-pen"></i>
-        </IconContent>
-    </CircularProgress>
+        <CircularProgress Progress="50"
+        Size="160"
+        FillColor="var(--accent-color)"
+        BackgroundColor="var(--surface-tertiary)"
+        InnerText="Speaking"
+        OnClickCallback="@(() => NavigationManager.NavigateTo("/speaking"))">
+            <IconContent>
+                <i class="fa-solid fa-microphone"></i>
+            </IconContent>
+        </CircularProgress>
 
-    <CircularProgress Progress="50"
-    Size="150"
-    FillColor="red"
-    BackgroundColor="#eee"
-    InnerText="Speaking"
-    OnClickCallback="@(() => NavigationManager.NavigateTo("/speaking"))">
-        <IconContent>
-            <i class="fa-solid fa-microphone"></i>
-        </IconContent>
-    </CircularProgress>
-
-    <CircularProgress Progress="30"
-    Size="150"
-    FillColor="orange"
-    BackgroundColor="#eee"
-    InnerText="Listening"
-    OnClickCallback="@(() => NavigationManager.NavigateTo("/listening"))">
-        <IconContent>
-            <i class="fa-solid fa-headphones"></i>
-        </IconContent>
-    </CircularProgress>
+        <CircularProgress Progress="30"
+        Size="160"
+        FillColor="#8b5cf6"
+        BackgroundColor="var(--surface-tertiary)"
+        InnerText="Listening"
+        OnClickCallback="@(() => NavigationManager.NavigateTo("/listening"))">
+            <IconContent>
+                <i class="fa-solid fa-headphones"></i>
+            </IconContent>
+        </CircularProgress>
+    </div>
 </div>
 
 @code {

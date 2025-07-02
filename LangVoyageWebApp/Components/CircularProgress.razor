@@ -1,10 +1,8 @@
 ﻿@* CircularProgress.razor *@
-<div @onclick="OnClick" style="display: flex; flex-direction: column; align-items: center; cursor: pointer;">
-    <div style="
+<div @onclick="OnClick" class="circular-progress-container">
+    <div class="circular-progress-circle" style="
          width:@(Size)px;
          height:@(Size)px;
-         border-radius:50%;
-         position:relative;
          background:conic-gradient(@(FillColor) @(Progress * 3.6)deg, @(BackgroundColor) 0);
          -webkit-mask: radial-gradient(
          circle at center,
@@ -17,29 +15,81 @@
          transparent 0 calc(50% - @(Thickness)px),
          black calc(50% - @(Thickness)px) 50%,
          transparent 50% 100%
-         );
-         display:flex;
-         align-items:center;
-         justify-content:center;
-         ">
+         );">
         @if (IconContent != null)
         {
-            @IconContent
+            <div class="progress-icon">
+                @IconContent
+            </div>
         }
         else if (!string.IsNullOrEmpty(InnerImageUrl))
         {
-            <img src="@InnerImageUrl" alt="Inner Image" style="max-width:60%; max-height:60%;" />
+            <img src="@InnerImageUrl" alt="Inner Image" class="progress-image" />
         }
     </div>
     
     @* Display text below the circular progress *@
     @if (!string.IsNullOrEmpty(InnerText))
     {
-        <div style="margin-top: 8px; text-align: center; font-size: 14px; max-width: @(Size + 20)px; word-wrap: break-word;">
+        <div class="progress-text" style="max-width: @(Size + 20)px;">
             @InnerText
         </div>
     }
 </div>
+
+<style>
+    .circular-progress-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        cursor: pointer;
+        padding: var(--spacing-md);
+        border-radius: var(--radius);
+        transition: all 0.3s ease;
+    }
+    
+    .circular-progress-container:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-md);
+        background-color: var(--surface-color);
+    }
+    
+    .circular-progress-circle {
+        border-radius: 50%;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        box-shadow: var(--shadow-sm);
+    }
+    
+    .progress-icon {
+        font-size: 2rem;
+        color: var(--text-primary);
+        transition: color 0.3s ease;
+    }
+    
+    .circular-progress-container:hover .progress-icon {
+        color: var(--primary-color);
+    }
+    
+    .progress-image {
+        max-width: 60%;
+        max-height: 60%;
+        border-radius: var(--radius);
+    }
+    
+    .progress-text {
+        margin-top: var(--spacing-md);
+        text-align: center;
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        word-wrap: break-word;
+        line-height: 1.4;
+    }
+</style>
 
 @code {
     [Parameter]
