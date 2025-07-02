@@ -1,6 +1,8 @@
 using LangVoyageServer.Database;
 using LangVoyageServer.Requests;
 
+[assembly: CollectionBehavior(DisableTestParallelization = true)]
+
 namespace TestServer;
 
 /// <summary>
