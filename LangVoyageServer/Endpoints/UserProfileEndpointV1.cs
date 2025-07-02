@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using LangVoyageServer.Database;
 using LangVoyageServer.Requests;
+using Microsoft.OpenApi.Models;
 
 namespace LangVoyageServer.Endpoints;
 
@@ -18,9 +19,25 @@ public static class UserProfileEndpointV1
 
                 return TypedResults.Ok(await srv.GetUserAsync(id));
             })
-            .WithDescription("Returns a user by id.")
+            .WithDescription("Retrieves a user profile by their unique identifier. Returns the complete user profile including username and current language level.")
             .WithName("GetUserById")
-            .WithOpenApi();
+            .WithSummary("Get user profile by ID")
+            .WithOpenApi(operation => new(operation)
+            {
+                Parameters = operation.Parameters?.Select(p =>
+                {
+                    if (p.Name == "id")
+                    {
+                        p.Description = "The unique identifier of the user profile to retrieve";
+                    }
+                    return p;
+                }).ToList(),
+                Responses = new Dictionary<string, Microsoft.OpenApi.Models.OpenApiResponse>
+                {
+                    ["200"] = new() { Description = "User profile found and returned successfully" },
+                    ["404"] = new() { Description = "User profile not found for the specified ID" }
+                }
+            });
 
         group.MapPatch("/{id:int}",
                 async (IValidator<UpdateUserRequest> validator, IStorageService srv, int id, UpdateUserRequest req) =>
@@ -39,9 +56,31 @@ public static class UserProfileEndpointV1
 
                     return TypedResults.Ok(await srv.UpsertUserProfileAsync(id, req));
                 })
-            .WithDescription("Updates the language level and/or username of a user")
+            .WithDescription("Updates an existing user profile's language level and/or username. Validates the request before applying changes. Both fields are optional - only provided fields will be updated.")
             .WithName("UpdateUserById")
-            .WithOpenApi();
+            .WithSummary("Update user profile")
+            .WithOpenApi(operation => new(operation)
+            {
+                Parameters = operation.Parameters?.Select(p =>
+                {
+                    if (p.Name == "id")
+                    {
+                        p.Description = "The unique identifier of the user profile to update";
+                    }
+                    return p;
+                }).ToList(),
+                RequestBody = new Microsoft.OpenApi.Models.OpenApiRequestBody
+                {
+                    Description = "Update request containing optional username and/or language level changes",
+                    Required = true
+                },
+                Responses = new Dictionary<string, Microsoft.OpenApi.Models.OpenApiResponse>
+                {
+                    ["200"] = new() { Description = "User profile updated successfully" },
+                    ["400"] = new() { Description = "Validation failed for the provided request data" },
+                    ["404"] = new() { Description = "User profile not found for the specified ID" }
+                }
+            });
 
         return group;
     }
