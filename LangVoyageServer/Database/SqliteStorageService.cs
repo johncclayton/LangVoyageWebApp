@@ -87,7 +87,8 @@ public class SqliteStorageService : IStorageService
         var user = await GetUserAsync(userId);
         if (user == null)
         {
-            throw new Exception("No user profile found.");
+            // Return empty list instead of throwing for missing user
+            return new List<LanguageNoun>();
         }
 
         // Use the noun progress view to implement spaced repetition algorithm:

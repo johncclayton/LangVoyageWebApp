@@ -32,6 +32,8 @@ public class UpdateUserRequestValidator : AbstractValidator<UpdateUserRequest>
     {
         if (value == null)
             return true;
-        return Enum.TryParse(typeof(ValidLanguageLevel), value, true, out _);
+        if (Enum.TryParse(typeof(ValidLanguageLevel), value, true, out var temp))
+            return Enum.IsDefined(typeof(ValidLanguageLevel), temp);
+        return false;
     }
 }

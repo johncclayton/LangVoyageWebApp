@@ -12,7 +12,6 @@
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="FluentValidation.TestHelper" Version="11.3.1" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.6" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
         <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="9.0.6" />
