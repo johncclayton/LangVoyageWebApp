@@ -21,23 +21,7 @@ public static class UserProfileEndpointV1
             })
             .WithDescription("Retrieves a user profile by their unique identifier. Returns the complete user profile including username and current language level.")
             .WithName("GetUserById")
-            .WithSummary("Get user profile by ID")
-            .WithOpenApi(operation => new(operation)
-            {
-                Parameters = operation.Parameters?.Select(p =>
-                {
-                    if (p.Name == "id")
-                    {
-                        p.Description = "The unique identifier of the user profile to retrieve";
-                    }
-                    return p;
-                }).ToList(),
-                Responses = new Microsoft.OpenApi.Models.OpenApiResponses
-                {
-                    ["200"] = new Microsoft.OpenApi.Models.OpenApiResponse { Description = "User profile found and returned successfully" },
-                    ["404"] = new Microsoft.OpenApi.Models.OpenApiResponse { Description = "User profile not found for the specified ID" }
-                }
-            });
+            .WithSummary("Get user profile by ID");
 
         group.MapPatch("/{id:int}",
                 async (IValidator<UpdateUserRequest> validator, IStorageService srv, int id, UpdateUserRequest req) =>
@@ -58,29 +42,7 @@ public static class UserProfileEndpointV1
                 })
             .WithDescription("Updates an existing user profile's language level and/or username. Validates the request before applying changes. Both fields are optional - only provided fields will be updated.")
             .WithName("UpdateUserById")
-            .WithSummary("Update user profile")
-            .WithOpenApi(operation => new(operation)
-            {
-                Parameters = operation.Parameters?.Select(p =>
-                {
-                    if (p.Name == "id")
-                    {
-                        p.Description = "The unique identifier of the user profile to update";
-                    }
-                    return p;
-                }).ToList(),
-                RequestBody = new Microsoft.OpenApi.Models.OpenApiRequestBody
-                {
-                    Description = "Update request containing optional username and/or language level changes",
-                    Required = true
-                },
-                Responses = new Microsoft.OpenApi.Models.OpenApiResponses
-                {
-                    ["200"] = new() { Description = "User profile updated successfully" },
-                    ["400"] = new() { Description = "Validation failed for the provided request data" },
-                    ["404"] = new() { Description = "User profile not found for the specified ID" }
-                }
-            });
+            .WithSummary("Update user profile");
 
         return group;
     }
