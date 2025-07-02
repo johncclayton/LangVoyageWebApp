@@ -20,6 +20,10 @@
 	<s:String x:Key="/Default/CodeInspection/ExcludedFiles/FilesAndFoldersToSkip2/=7020124F_002D9FFC_002D4AC3_002D8F3D_002DAAB8E0240759_002Ff_003AType_002ECoreCLR_002Ecs_002Fl_003A_002E_002E_003F_002E_002E_003F_002E_002E_003FAppData_003FRoaming_003FJetBrains_003FRider2024_002E3_003Fresharper_002Dhost_003FSourcesCache_003F5cde391207de75962d7bacb899ca2bd3985c86911b152d185b58999a422bf0_003FType_002ECoreCLR_002Ecs/@EntryIndexedValue">ForceIncluded</s:String>
 	<s:String x:Key="/Default/CodeInspection/ExcludedFiles/FilesAndFoldersToSkip2/=7020124F_002D9FFC_002D4AC3_002D8F3D_002DAAB8E0240759_002Ff_003AWebApplicationBuilder_002Ecs_002Fl_003A_002E_002E_003F_002E_002E_003F_002E_002E_003F_002E_002E_003FAppData_003FRoaming_003FJetBrains_003FRider2024_002E3_003Fresharper_002Dhost_003FSourcesCache_003F2ae5a0322dbe6ebe61e4a9bd573e376bb7c713e068b330203771a988bdda6b_003FWebApplicationBuilder_002Ecs/@EntryIndexedValue">ForceIncluded</s:String>
 	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=de697ba4_002Dc728_002D4086_002Da5cc_002D42ed393db825/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="All tests from Solution" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
-  &lt;Solution /&gt;&#xD;
+  &lt;Not&gt;&#xD;
+    &lt;TestAncestor&gt;&#xD;
+      &lt;TestId&gt;xUnit::C50021BB-CC76-454E-97F9-D96C316CA329::net9.0::TestServer.TestEndpoints&lt;/TestId&gt;&#xD;
+    &lt;/TestAncestor&gt;&#xD;
+  &lt;/Not&gt;&#xD;
 &lt;/SessionState&gt;</s:String>
 	</wpf:ResourceDictionary>

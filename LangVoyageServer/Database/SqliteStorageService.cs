@@ -90,7 +90,11 @@ public class SqliteStorageService : IStorageService
             throw new Exception("No user profile found.");
         }
 
-        // use the "noun progress view", to simply fetch a series of nouns that are "next" to be practised.
+        // Use the noun progress view to implement spaced repetition algorithm:
+        // - Filter by user ID and their current language level
+        // - Order by TimeFrame (lower = needs more practice, higher = mastered)
+        // - Join with nouns table to get complete noun details
+        // - Limit results to requested number
         return await _context.NounProgressView
             .Where(v => v.UserProfileId == userId && v.NounLevel == user.LanguageLevel)
             .OrderBy(v => v.TimeFrame)
@@ -118,7 +122,8 @@ public class SqliteStorageService : IStorageService
         var nounProgress = await _context.NounProgresses.FindAsync([userId, nounId]);
         if (nounProgress == null)
         {
-            // create one!
+            // Create new progress record for first-time practice
+            // Starting TimeFrame of 1 indicates beginner level
             var newProgress = _context.NounProgresses.Add(new NounProgress
             {
                 UserProfileId = user.Id,
@@ -132,7 +137,13 @@ public class SqliteStorageService : IStorageService
             return newProgress.Entity;
         }
 
+        // Update existing progress record
         nounProgress.LastPractised = DateTime.UtcNow;
+        
+        // Implement spaced repetition logic:
+        // Correct answers increase TimeFrame (longer intervals between practice)
+        // Incorrect answers decrease TimeFrame (more frequent practice needed)
+        // TimeFrame cannot go below 0 (minimum practice frequency)
         if (wasCorrect)
         {
             nounProgress.TimeFrame++;
@@ -149,7 +160,6 @@ public class SqliteStorageService : IStorageService
 
     public async Task<int> DeleteNounProgressAsync(int userId, int nounId)
     {
-        await _context.SaveChangesAsync();
         var theProgress = _context.NounProgresses
             .Where(np => np.UserProfileId == userId && np.NounId == nounId);
         _context.NounProgresses.RemoveRange(theProgress.ToArray());
@@ -158,9 +168,13 @@ public class SqliteStorageService : IStorageService
 
     public async Task<IList<NounProgress>> UpdateAllNounProgressAsync(int userId)
     {
+        // Get all available nouns for practice (this uses a high limit to get all nouns)
         var allNouns = await GetNewPractiseNounsAsync(userId, 99999);
 
         var result = new List<NounProgress>();
+        
+        // Mark all nouns as practiced correctly - useful for testing scenarios
+        // or administrative functions to simulate complete learning progress
         foreach (var noun in allNouns)
         {
             result.Add(await UpsertNounProgressAsync(userId, noun.Id, true));
