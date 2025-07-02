@@ -149,7 +149,6 @@ public class SqliteStorageService : IStorageService
 
     public async Task<int> DeleteNounProgressAsync(int userId, int nounId)
     {
-        await _context.SaveChangesAsync();
         var theProgress = _context.NounProgresses
             .Where(np => np.UserProfileId == userId && np.NounId == nounId);
         _context.NounProgresses.RemoveRange(theProgress.ToArray());
