@@ -1,60 +1,151 @@
+/* Import modern font */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* Modern CSS Variables for consistent theming */
+:root {
+    --primary-color: #4f46e5;
+    --primary-light: #6366f1;
+    --primary-dark: #3730a3;
+    --secondary-color: #10b981;
+    --accent-color: #f59e0b;
+    --surface-color: #ffffff;
+    --surface-secondary: #f8fafc;
+    --surface-tertiary: #f1f5f9;
+    --text-primary: #1e293b;
+    --text-secondary: #64748b;
+    --text-tertiary: #94a3b8;
+    --border-color: #e2e8f0;
+    --border-light: #f1f5f9;
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --radius: 0.5rem;
+    --radius-sm: 0.25rem;
+    --spacing-xs: 0.5rem;
+    --spacing-sm: 0.75rem;
+    --spacing-md: 1rem;
+    --spacing-lg: 1.5rem;
+    --spacing-xl: 2rem;
+    --spacing-2xl: 3rem;
+}
+
 html, body {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+    color: var(--text-primary);
+    background-color: var(--surface-secondary);
+    line-height: 1.6;
+    font-size: 16px;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: var(--text-primary);
+    font-weight: 600;
+    line-height: 1.3;
+    margin-bottom: var(--spacing-md);
+}
+
+h1 {
+    font-size: 2.25rem;
+    font-weight: 700;
+    margin-bottom: var(--spacing-lg);
 }
 
 h1:focus {
     outline: none;
 }
 
+/* Modern button and link styles */
 a, .btn-link {
-    color: #0071c1;
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+a:hover, .btn-link:hover {
+    color: var(--primary-dark);
+    text-decoration: none;
 }
 
 .btn-primary {
     color: #fff;
-    background-color: #1b6ec2;
-    border-color: #1861ac;
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    border-radius: var(--radius);
+    padding: var(--spacing-sm) var(--spacing-lg);
+    font-weight: 500;
+    transition: all 0.2s ease;
+    box-shadow: var(--shadow-sm);
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-dark);
+    border-color: var(--primary-dark);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow);
 }
 
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+    box-shadow: 0 0 0 3px rgb(79 70 229 / 0.1);
+    border-color: var(--primary-color);
 }
 
 .content {
-    padding-top: 1.1rem;
+    padding: var(--spacing-xl) var(--spacing-lg);
+    background-color: var(--surface-color);
+    border-radius: var(--radius);
+    margin: var(--spacing-md);
+    box-shadow: var(--shadow-sm);
+    min-height: calc(100vh - 6rem);
 }
 
+/* Modern form validation styles */
 .valid.modified:not([type=checkbox]) {
-    outline: 1px solid #26b050;
+    outline: 2px solid var(--secondary-color);
+    outline-offset: 2px;
 }
 
 .invalid {
-    outline: 1px solid red;
+    outline: 2px solid #ef4444;
+    outline-offset: 2px;
 }
 
 .validation-message {
-    color: red;
+    color: #ef4444;
+    font-size: 0.875rem;
+    margin-top: var(--spacing-xs);
 }
 
+/* Modern error UI styling */
 #blazor-error-ui {
     color-scheme: light only;
-    background: lightyellow;
+    background: #fef3c7;
+    border: 1px solid #f59e0b;
     bottom: 0;
-    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+    box-shadow: var(--shadow-md);
     box-sizing: border-box;
     display: none;
     left: 0;
-    padding: 0.6rem 1.25rem 0.7rem 1.25rem;
+    padding: var(--spacing-md) var(--spacing-lg);
     position: fixed;
     width: 100%;
     z-index: 1000;
+    border-radius: var(--radius) var(--radius) 0 0;
+    color: #92400e;
 }
 
     #blazor-error-ui .dismiss {
         cursor: pointer;
         position: absolute;
-        right: 0.75rem;
-        top: 0.5rem;
+        right: var(--spacing-md);
+        top: var(--spacing-md);
+        color: #92400e;
+        font-size: 1.25rem;
+        font-weight: bold;
+        transition: opacity 0.2s ease;
+    }
+
+    #blazor-error-ui .dismiss:hover {
+        opacity: 0.7;
     }
 
 .blazor-error-boundary {
@@ -67,6 +158,7 @@ a, .btn-link {
         content: "An error has occurred."
     }
 
+/* Modern loading progress styling */
 .loading-progress {
     position: relative;
     display: block;
@@ -77,14 +169,14 @@ a, .btn-link {
 
     .loading-progress circle {
         fill: none;
-        stroke: #e0e0e0;
+        stroke: var(--border-color);
         stroke-width: 0.6rem;
         transform-origin: 50% 50%;
         transform: rotate(-90deg);
     }
 
         .loading-progress circle:last-child {
-            stroke: #1b6ec2;
+            stroke: var(--primary-color);
             stroke-dasharray: calc(3.141 * var(--blazor-load-percentage, 0%) * 0.8), 500%;
             transition: stroke-dasharray 0.05s ease-in-out;
         }
@@ -92,7 +184,8 @@ a, .btn-link {
 .loading-progress-text {
     position: absolute;
     text-align: center;
-    font-weight: bold;
+    font-weight: 600;
+    color: var(--text-primary);
     inset: calc(20vh + 3.25rem) 0 auto 0.2rem;
 }
 
@@ -100,29 +193,42 @@ a, .btn-link {
         content: var(--blazor-load-percentage-text, "Loading");
     }
 
-code {
-    color: #c02d76;
+/* Modern navigation styling */
+.nav-link {
+    padding: var(--spacing-md) var(--spacing-lg);
+    transition: all 0.2s ease;
+    border-radius: var(--radius);
+    margin: 2px var(--spacing-xs);
+    font-weight: 500;
 }
 
+.nav-link:hover {
+    background-color: rgba(79, 70, 229, 0.1);
+    transform: translateX(4px);
+}
+
+.nav-link.active {
+    background-color: var(--primary-color);
+    color: white;
+    font-weight: 600;
+    box-shadow: var(--shadow);
+}
+
+/* Modern code styling */
+code {
+    color: var(--primary-dark);
+    background-color: var(--surface-tertiary);
+    padding: 2px 6px;
+    border-radius: var(--radius-sm);
+    font-size: 0.875rem;
+}
+
+/* Form enhancements */
 .form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
-    color: var(--bs-secondary-color);
+    color: var(--text-tertiary);
     text-align: end;
 }
 
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
     text-align: start;
-}
-
-.nav-link {
-    /*text-align: center;*/
-    padding: 10px;
-    transition: all 0.3s ease;
-}
-
-.nav-link:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-}
-
-.nav-link.active {
-    background-color: rgba(255, 255, 255, 0.2);
 }
