@@ -19,12 +19,44 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 builder.Services.AddValidatorsFromAssemblyContaining<UpdateUserRequestValidator>();
 
+// Configure application options
+builder.Services.Configure<LangVoyageOptions>(
+    builder.Configuration.GetSection(LangVoyageOptions.SectionName));
+
+// Configure logging
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.AddDebug();
+
+if (builder.Environment.IsDevelopment())
+{
+    builder.Logging.SetMinimumLevel(LogLevel.Debug);
+}
+else
+{
+    builder.Logging.SetMinimumLevel(LogLevel.Information);
+}
+
 var corsPolicyName = AppConstants.Cors.PolicyName;
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(
         corsPolicyName,
-        policy => { policy.WithOrigins("*").AllowAnyMethod().AllowAnyHeader(); });
+        policy => 
+        {
+            var corsSection = builder.Configuration.GetSection($"{LangVoyageOptions.SectionName}:Cors");
+            var allowedOrigins = corsSection.GetSection("AllowedOrigins").Get<string[]>() ?? new[] { "*" };
+            var allowAnyMethod = corsSection.GetValue<bool>("AllowAnyMethod", true);
+            var allowAnyHeader = corsSection.GetValue<bool>("AllowAnyHeader", true);
+                
+            policy.WithOrigins(allowedOrigins);
+            
+            if (allowAnyMethod)
+                policy.AllowAnyMethod();
+                
+            if (allowAnyHeader)
+                policy.AllowAnyHeader();
+        });
 });
 
 // builder.Services.AddAuthentication(NegotiateDefaults.AuthenticationScheme)

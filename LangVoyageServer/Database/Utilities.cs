@@ -2,6 +2,7 @@
 using LangVoyageServer.Importer;
 using LangVoyageServer.Requests;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace LangVoyageServer.Database;
 
@@ -36,10 +37,11 @@ public static class Utilities
         var defaultUser = await service.GetUserAsync(1);
         if (defaultUser == null)
         {
+            var options = services.GetService<IOptions<LangVoyageOptions>>()?.Value ?? new LangVoyageOptions();
             await service.UpsertUserProfileAsync(1, new UpdateUserRequest()
                 {
-                    Username = "johnclayton",
-                    LanguageLevel = "B2"
+                    Username = options.DefaultUser.Username,
+                    LanguageLevel = options.DefaultUser.LanguageLevel
                 }
             );
         }
