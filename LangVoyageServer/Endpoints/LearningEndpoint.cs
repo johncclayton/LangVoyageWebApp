@@ -27,9 +27,9 @@ public static class LearningEndpointV1
                     }
                     return p;
                 }).ToList(),
-                Responses = new Dictionary<string, OpenApiResponse>
+                Responses = new Microsoft.OpenApi.Models.OpenApiResponses
                 {
-                    ["200"] = new() { Description = "Learning progress statistics returned successfully, including total nouns count and distribution across difficulty levels" }
+                    ["200"] = new Microsoft.OpenApi.Models.OpenApiResponse { Description = "Learning progress statistics returned successfully, including total nouns count and distribution across difficulty levels" }
                 }
             });
         
@@ -50,10 +50,10 @@ public static class LearningEndpointV1
                     }
                     return p;
                 }).ToList(),
-                Responses = new Dictionary<string, OpenApiResponse>
+                Responses = new OpenApiResponses
                 {
-                    ["200"] = new() { Description = "List of language nouns returned successfully, ordered by practice priority using spaced repetition" },
-                    ["500"] = new() { Description = "Internal server error - user profile not found or database error" }
+                    ["200"] = new OpenApiResponse { Description = "List of language nouns returned successfully, ordered by practice priority using spaced repetition" },
+                    ["500"] = new OpenApiResponse { Description = "Internal server error - user profile not found or database error" }
                 }
             });
 
@@ -81,10 +81,10 @@ public static class LearningEndpointV1
                     Description = "Progress request containing the noun ID and whether the answer was correct",
                     Required = true
                 },
-                Responses = new Dictionary<string, OpenApiResponse>
+                Responses = new Microsoft.OpenApi.Models.OpenApiResponses
                 {
-                    ["200"] = new() { Description = "Progress updated successfully, returns the updated NounProgress object with new time frame and practice timestamp" },
-                    ["500"] = new() { Description = "Internal server error - user profile not found or database error" }
+                    ["200"] = new Microsoft.OpenApi.Models.OpenApiResponse { Description = "Progress updated successfully, returns the updated NounProgress object with new time frame and practice timestamp" },
+                    ["500"] = new Microsoft.OpenApi.Models.OpenApiResponse { Description = "Internal server error - user profile not found or database error" }
                 }
             });
         
@@ -107,10 +107,10 @@ public static class LearningEndpointV1
                     }
                     return p;
                 }).ToList(),
-                Responses = new Dictionary<string, OpenApiResponse>
+                Responses = new Microsoft.OpenApi.Models.OpenApiResponses
                 {
-                    ["204"] = new() { Description = "All progress records deleted successfully - no content returned" },
-                    ["500"] = new() { Description = "Internal server error - database error during deletion" }
+                    ["204"] = new Microsoft.OpenApi.Models.OpenApiResponse { Description = "All progress records deleted successfully - no content returned" },
+                    ["500"] = new Microsoft.OpenApi.Models.OpenApiResponse { Description = "Internal server error - database error during deletion" }
                 }
             });
 

@@ -32,10 +32,10 @@ public static class UserProfileEndpointV1
                     }
                     return p;
                 }).ToList(),
-                Responses = new Dictionary<string, Microsoft.OpenApi.Models.OpenApiResponse>
+                Responses = new Microsoft.OpenApi.Models.OpenApiResponses
                 {
-                    ["200"] = new() { Description = "User profile found and returned successfully" },
-                    ["404"] = new() { Description = "User profile not found for the specified ID" }
+                    ["200"] = new Microsoft.OpenApi.Models.OpenApiResponse { Description = "User profile found and returned successfully" },
+                    ["404"] = new Microsoft.OpenApi.Models.OpenApiResponse { Description = "User profile not found for the specified ID" }
                 }
             });
 
@@ -74,7 +74,7 @@ public static class UserProfileEndpointV1
                     Description = "Update request containing optional username and/or language level changes",
                     Required = true
                 },
-                Responses = new Dictionary<string, Microsoft.OpenApi.Models.OpenApiResponse>
+                Responses = new Microsoft.OpenApi.Models.OpenApiResponses
                 {
                     ["200"] = new() { Description = "User profile updated successfully" },
                     ["400"] = new() { Description = "Validation failed for the provided request data" },
