@@ -36,6 +36,10 @@ public class TestDatabaseOperations : IClassFixture<TestWebApplicationFactory<Pr
         }
     }
 
+    /// <summary>
+    /// Verifies that UpdateNounsAsync correctly handles duplicate nouns by removing duplicates from database storage.
+    /// This test ensures data integrity and prevents duplicate noun entries from corrupting the learning content.
+    /// </summary>
     [Fact]
     public async Task UpdateNounsAsync_WithDuplicateNouns_RemovesDuplicates()
     {
@@ -59,6 +63,10 @@ public class TestDatabaseOperations : IClassFixture<TestWebApplicationFactory<Pr
         Assert.Equal(2, uniqueNouns.Count); // But only 2 unique nouns should be processed
     }
 
+    /// <summary>
+    /// Verifies that UpdateNounsAsync gracefully handles empty input arrays without causing errors.
+    /// This test ensures robust handling of edge cases in bulk noun update operations.
+    /// </summary>
     [Fact]
     public async Task UpdateNounsAsync_WithEmptyArray_ReturnsEmptyResult()
     {
@@ -75,6 +83,10 @@ public class TestDatabaseOperations : IClassFixture<TestWebApplicationFactory<Pr
         Assert.Empty(result);
     }
 
+    /// <summary>
+    /// Verifies that the spaced repetition TimeFrame progression algorithm works correctly through multiple practice sessions.
+    /// This test ensures the core learning algorithm advances TimeFrame on correct answers and decrements on incorrect ones.
+    /// </summary>
     [Fact]
     public async Task NounProgress_TimeFrameProgression_WorksCorrectly()
     {
@@ -105,6 +117,10 @@ public class TestDatabaseOperations : IClassFixture<TestWebApplicationFactory<Pr
         Assert.Equal(2, progress4.TimeFrame);
     }
 
+    /// <summary>
+    /// Verifies that TimeFrame values never drop below zero even with multiple consecutive incorrect answers.
+    /// This test ensures the spaced repetition algorithm maintains valid state boundaries and prevents negative values.
+    /// </summary>
     [Fact]
     public async Task NounProgress_TimeFrameCannotGoBelowZero()
     {
@@ -130,6 +146,10 @@ public class TestDatabaseOperations : IClassFixture<TestWebApplicationFactory<Pr
         Assert.Equal(0, progress3.TimeFrame);
     }
 
+    /// <summary>
+    /// Verifies that UpdateAllNounProgressAsync creates progress records for all available nouns with initial TimeFrame=1.
+    /// This test ensures bulk progress initialization functionality works correctly for new users or progress resets.
+    /// </summary>
     [Fact]
     public async Task UpdateAllNounProgressAsync_CreatesProgressForAllNouns()
     {
@@ -154,6 +174,10 @@ public class TestDatabaseOperations : IClassFixture<TestWebApplicationFactory<Pr
         }
     }
 
+    /// <summary>
+    /// Verifies that GetNewPractiseNounsAsync respects the limit parameter and returns appropriate number of nouns.
+    /// This test ensures proper pagination and result limiting functionality for practice session management.
+    /// </summary>
     [Fact]
     public async Task GetNewPractiseNounsAsync_RespectsLimit()
     {
@@ -172,6 +196,10 @@ public class TestDatabaseOperations : IClassFixture<TestWebApplicationFactory<Pr
         Assert.True(result1.Count <= 1);
     }
 
+    /// <summary>
+    /// Verifies that GetNewPractiseNounsAsync returns nouns ordered by TimeFrame for optimal spaced repetition learning.
+    /// This test ensures the learning algorithm prioritizes nouns that need more practice (lower TimeFrame values).
+    /// </summary>
     [Fact]
     public async Task GetNewPractiseNounsAsync_OrdersByTimeFrame()
     {
@@ -206,6 +234,10 @@ public class TestDatabaseOperations : IClassFixture<TestWebApplicationFactory<Pr
         Assert.True(firstNounProgress == null || firstNounProgress.TimeFrame <= 1);
     }
 
+    /// <summary>
+    /// Verifies that GetLearningProgress accurately reflects actual practice progress and updates dynamically.
+    /// This test ensures the learning dashboard provides accurate analytics based on current progress state.
+    /// </summary>
     [Fact]
     public async Task GetLearningProgress_ReflectsActualProgress()
     {
@@ -238,6 +270,10 @@ public class TestDatabaseOperations : IClassFixture<TestWebApplicationFactory<Pr
         Assert.True(updatedProgress.NounProgresses[1] >= 5);
     }
 
+    /// <summary>
+    /// Verifies that DeleteAllNounProgressAsync completely removes all progress records for a user.
+    /// This test ensures proper cleanup functionality for progress reset operations and maintains data integrity.
+    /// </summary>
     [Fact]
     public async Task DeleteAllNounProgressAsync_ClearsAllProgress()
     {

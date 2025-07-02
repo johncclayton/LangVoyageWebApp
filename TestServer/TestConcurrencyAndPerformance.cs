@@ -36,6 +36,10 @@ public class TestConcurrencyAndPerformance : IClassFixture<TestWebApplicationFac
         }
     }
 
+    /// <summary>
+    /// Verifies that concurrent noun progress updates are handled correctly without data corruption or race conditions.
+    /// This test ensures thread safety and data integrity in multi-user environments with simultaneous progress updates.
+    /// </summary>
     [Fact]
     public async Task ConcurrentNounProgressUpdates_HandleCorrectly()
     {
@@ -74,6 +78,10 @@ public class TestConcurrencyAndPerformance : IClassFixture<TestWebApplicationFac
         Assert.True(finalProgress.TimeFrame >= 1); // Should be at least 1 or higher
     }
 
+    /// <summary>
+    /// Verifies that bulk noun progress update operations complete within acceptable performance thresholds.
+    /// This test ensures the system can handle moderate load without performance degradation affecting user experience.
+    /// </summary>
     [Fact]
     public async Task BulkNounProgressUpdates_PerformWell()
     {
@@ -100,6 +108,10 @@ public class TestConcurrencyAndPerformance : IClassFixture<TestWebApplicationFac
             $"Bulk operations took {stopwatch.ElapsedMilliseconds}ms, which is too slow");
     }
 
+    /// <summary>
+    /// Verifies that GetNewPractiseNounsAsync handles very large limit values gracefully without performance issues.
+    /// This test ensures system stability and proper resource management with extreme parameter values.
+    /// </summary>
     [Fact]
     public async Task GetNewPractiseNounsAsync_WithLargeLimit_ReturnsAppropriateResults()
     {
@@ -117,6 +129,10 @@ public class TestConcurrencyAndPerformance : IClassFixture<TestWebApplicationFac
         Assert.True(result.Count <= 1000);
     }
 
+    /// <summary>
+    /// Verifies that UpdateAllNounProgressAsync performs efficiently even with large datasets.
+    /// This test ensures bulk operations maintain acceptable performance for administrative and initialization tasks.
+    /// </summary>
     [Fact]
     public async Task UpdateAllNounProgressAsync_WithManyNouns_PerformsWell()
     {
@@ -141,6 +157,10 @@ public class TestConcurrencyAndPerformance : IClassFixture<TestWebApplicationFac
         Assert.All(result, progress => Assert.Equal(1, progress.TimeFrame));
     }
 
+    /// <summary>
+    /// Verifies that GetLearningProgress correctly calculates progress distribution statistics across TimeFrame levels.
+    /// This test ensures accurate analytics calculation for the learning dashboard and progress tracking features.
+    /// </summary>
     [Fact]
     public async Task GetLearningProgress_CalculatesCorrectly()
     {
@@ -176,6 +196,10 @@ public class TestConcurrencyAndPerformance : IClassFixture<TestWebApplicationFac
         Assert.True(progress.NounProgresses[3] >= 1); // At least 1 noun at TimeFrame 3
     }
 
+    /// <summary>
+    /// Verifies that multiple users can operate independently without interfering with each other's progress data.
+    /// This test ensures proper data isolation and multi-tenancy support in the learning progress system.
+    /// </summary>
     [Fact]
     public async Task MultipleUsersCanOperateIndependently()
     {
@@ -214,6 +238,10 @@ public class TestConcurrencyAndPerformance : IClassFixture<TestWebApplicationFac
         Assert.Equal(1, progress2.TimeFrame); // First practice always starts at TimeFrame=1
     }
 
+    /// <summary>
+    /// Verifies that database constraints are properly enforced and progress data maintains referential integrity.
+    /// This test ensures data consistency and proper constraint validation in the progress tracking system.
+    /// </summary>
     [Fact]
     public async Task DatabaseConstraints_AreEnforced()
     {
