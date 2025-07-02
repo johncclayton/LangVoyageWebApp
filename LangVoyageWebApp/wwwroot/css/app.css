@@ -1,72 +1,194 @@
+/* Modern Learning-Focused Theme */
+:root {
+    /* Primary Colors - Learning & Focus */
+    --primary-blue: #2563eb;
+    --primary-blue-light: #3b82f6;
+    --primary-blue-dark: #1d4ed8;
+    
+    /* Secondary Colors - Growth & Success */
+    --secondary-green: #10b981;
+    --secondary-green-light: #34d399;
+    --secondary-green-dark: #059669;
+    
+    /* Accent Colors - Energy & Attention */
+    --accent-orange: #f59e0b;
+    --accent-orange-light: #fbbf24;
+    --accent-orange-dark: #d97706;
+    
+    /* Neutral Colors */
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-300: #d1d5db;
+    --gray-400: #9ca3af;
+    --gray-500: #6b7280;
+    --gray-600: #4b5563;
+    --gray-700: #374151;
+    --gray-800: #1f2937;
+    --gray-900: #111827;
+    
+    /* Learning Subject Colors */
+    --nouns-color: var(--primary-blue);
+    --sentences-color: var(--secondary-green);
+    --speaking-color: #ef4444; /* Red for speaking */
+    --listening-color: var(--accent-orange);
+    
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    
+    /* Border Radius */
+    --radius-sm: 0.25rem;
+    --radius: 0.375rem;
+    --radius-md: 0.5rem;
+    --radius-lg: 0.75rem;
+    --radius-xl: 1rem;
+}
+
 html, body {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: var(--gray-50);
+    color: var(--gray-800);
+    line-height: 1.6;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: var(--gray-900);
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--primary-blue), var(--secondary-green));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
 h1:focus {
     outline: none;
 }
 
+/* Modern Button Styles */
 a, .btn-link {
-    color: #0071c1;
+    color: var(--primary-blue);
+    text-decoration: none;
+    transition: all 0.2s ease-in-out;
+}
+
+a:hover, .btn-link:hover {
+    color: var(--primary-blue-dark);
+    text-decoration: none;
 }
 
 .btn-primary {
-    color: #fff;
-    background-color: #1b6ec2;
-    border-color: #1861ac;
+    color: white;
+    background: linear-gradient(135deg, var(--primary-blue), var(--primary-blue-dark));
+    border: none;
+    border-radius: var(--radius-md);
+    padding: 0.75rem 1.5rem;
+    font-weight: 500;
+    box-shadow: var(--shadow);
+    transition: all 0.2s ease-in-out;
+}
+
+.btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+    background: linear-gradient(135deg, var(--primary-blue-dark), var(--primary-blue));
 }
 
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+    box-shadow: 0 0 0 0.125rem white, 0 0 0 0.25rem var(--primary-blue);
+    border-color: var(--primary-blue);
 }
 
 .content {
-    padding-top: 1.1rem;
+    padding: 2rem;
+    background: white;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    margin: 1rem;
 }
 
+/* Modern Form Validation */
 .valid.modified:not([type=checkbox]) {
-    outline: 1px solid #26b050;
+    outline: 2px solid var(--secondary-green);
+    border-color: var(--secondary-green);
 }
 
 .invalid {
-    outline: 1px solid red;
+    outline: 2px solid #ef4444;
+    border-color: #ef4444;
 }
 
 .validation-message {
-    color: red;
+    color: #ef4444;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
 }
 
+/* Modern Error UI */
 #blazor-error-ui {
     color-scheme: light only;
-    background: lightyellow;
+    background: linear-gradient(135deg, #fee2e2, #fecaca);
     bottom: 0;
-    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+    box-shadow: var(--shadow-lg);
     box-sizing: border-box;
     display: none;
     left: 0;
-    padding: 0.6rem 1.25rem 0.7rem 1.25rem;
+    padding: 1rem 1.5rem;
     position: fixed;
     width: 100%;
     z-index: 1000;
+    border-top: 3px solid #ef4444;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    color: var(--gray-800);
 }
 
-    #blazor-error-ui .dismiss {
-        cursor: pointer;
-        position: absolute;
-        right: 0.75rem;
-        top: 0.5rem;
-    }
+#blazor-error-ui .dismiss {
+    cursor: pointer;
+    position: absolute;
+    right: 1rem;
+    top: 1rem;
+    color: #ef4444;
+    font-weight: bold;
+    font-size: 1.125rem;
+    transition: transform 0.2s ease-in-out;
+}
 
+#blazor-error-ui .dismiss:hover {
+    transform: scale(1.1);
+}
+
+/* Modern Error Boundary */
 .blazor-error-boundary {
-    background: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTYiIGhlaWdodD0iNDkiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIG92ZXJmbG93PSJoaWRkZW4iPjxkZWZzPjxjbGlwUGF0aCBpZD0iY2xpcDAiPjxyZWN0IHg9IjIzNSIgeT0iNTEiIHdpZHRoPSI1NiIgaGVpZ2h0PSI0OSIvPjwvY2xpcFBhdGg+PC9kZWZzPjxnIGNsaXAtcGF0aD0idXJsKCNjbGlwMCkiIHRyYW5zZm9ybT0idHJhbnNsYXRlKC0yMzUgLTUxKSI+PHBhdGggZD0iTTI2My41MDYgNTFDMjY0LjcxNyA1MSAyNjUuODEzIDUxLjQ4MzcgMjY2LjYwNiA1Mi4yNjU4TDI2Ny4wNTIgNTIuNzk4NyAyNjcuNTM5IDUzLjYyODMgMjkwLjE4NSA5Mi4xODMxIDI5MC41NDUgOTIuNzk1IDI5MC42NTYgOTIuOTk2QzI5MC44NzcgOTMuNTEzIDI5MSA5NC4wODE1IDI5MSA5NC42NzgyIDI5MSA5Ny4wNjUxIDI4OS4wMzggOTkgMjg2LjYxNyA5OUwyNDAuMzgzIDk5QzIzNy45NjMgOTkgMjM2IDk3LjA2NTEgMjM2IDk0LjY3ODIgMjM2IDk0LjM3OTkgMjM2LjAzMSA5NC4wODg2IDIzNi4wODkgOTMuODA3MkwyMzYuMzM4IDkzLjAxNjIgMjM2Ljg1OCA5Mi4xMzE0IDI1OS40NzMgNTMuNjI5NCAyNTkuOTYxIDUyLjc5ODUgMjYwLjQwNyA1Mi4yNjU4QzI2MS4yIDUxLjQ4MzcgMjYyLjI5NiA1MSAyNjMuNTA2IDUxWk0yNjMuNTg2IDY2LjAxODNDMjYwLjczNyA2Ni4wMTgzIDI1OS4zMTMgNjcuMTI0NSAyNTkuMzEzIDY5LjMzNyAyNTkuMzEzIDY5LjYxMDIgMjU5LjMzMiA2OS44NjA4IDI1OS4zNzEgNzAuMDg4N0wyNjEuNzk1IDg0LjAxNjEgMjY1LjM4IDg0LjAxNjEgMjY3LjgyMSA2OS43NDc1QzI2Ny44NiA2OS43MzA5IDI2Ny44NzkgNjkuNTg3NyAyNjcuODc5IDY5LjMxNzkgMjY3Ljg3OSA2Ny4xMTgyIDI2Ni40NDggNjYuMDE4MyAyNjMuNTg2IDY2LjAxODNaTTI2My41NzYgODYuMDU0N0MyNjEuMDQ5IDg2LjA1NDcgMjU5Ljc4NiA4Ny4zMDA1IDI1OS43ODYgODkuNzkyMSAyNTkuNzg2IDkyLjI4MzcgMjYxLjA0OSA5My41Mjk1IDI2My41NzYgOTMuNTI5NSAyNjYuMTE2IDkzLjUyOTUgMjY3LjM4NyA5Mi4yODM3IDI2Ny4zODcgODkuNzkyMSAyNjcuMzg3IDg3LjMwMDUgMjY2LjExNiA4Ni4wNTQ3IDI2My41NzYgODYuMDU0N1oiIGZpbGw9IiNGRkU1MDAiIGZpbGwtcnVsZT0iZXZlbm9kZCIvPjwvZz48L3N2Zz4=) no-repeat 1rem/1.8rem, #b32121;
-    padding: 1rem 1rem 1rem 3.7rem;
-    color: white;
+    background: linear-gradient(135deg, #fee2e2, #fecaca);
+    padding: 1.5rem 1.5rem 1.5rem 4rem;
+    color: var(--gray-800);
+    border-radius: var(--radius-lg);
+    border-left: 4px solid #ef4444;
+    position: relative;
 }
 
-    .blazor-error-boundary::after {
-        content: "An error has occurred."
-    }
+.blazor-error-boundary::before {
+    content: "⚠️";
+    position: absolute;
+    left: 1rem;
+    top: 1.5rem;
+    font-size: 1.5rem;
+}
 
+.blazor-error-boundary::after {
+    content: "An error has occurred. Please try again.";
+    font-weight: 500;
+}
+
+/* Modern Loading Progress */
 .loading-progress {
     position: relative;
     display: block;
@@ -75,54 +197,98 @@ a, .btn-link {
     margin: 20vh auto 1rem auto;
 }
 
-    .loading-progress circle {
-        fill: none;
-        stroke: #e0e0e0;
-        stroke-width: 0.6rem;
-        transform-origin: 50% 50%;
-        transform: rotate(-90deg);
-    }
+.loading-progress circle {
+    fill: none;
+    stroke: var(--gray-200);
+    stroke-width: 0.5rem;
+    transform-origin: 50% 50%;
+    transform: rotate(-90deg);
+    transition: stroke-dasharray 0.3s ease-in-out;
+}
 
-        .loading-progress circle:last-child {
-            stroke: #1b6ec2;
-            stroke-dasharray: calc(3.141 * var(--blazor-load-percentage, 0%) * 0.8), 500%;
-            transition: stroke-dasharray 0.05s ease-in-out;
-        }
+.loading-progress circle:last-child {
+    stroke: url(#progressGradient);
+    stroke-dasharray: calc(3.141 * var(--blazor-load-percentage, 0%) * 0.8), 500%;
+    transition: stroke-dasharray 0.05s ease-in-out;
+}
 
 .loading-progress-text {
     position: absolute;
     text-align: center;
-    font-weight: bold;
+    font-weight: 600;
     inset: calc(20vh + 3.25rem) 0 auto 0.2rem;
+    color: var(--primary-blue);
+    font-size: 1.125rem;
 }
 
-    .loading-progress-text:after {
-        content: var(--blazor-load-percentage-text, "Loading");
-    }
+.loading-progress-text:after {
+    content: var(--blazor-load-percentage-text, "Loading...");
+}
 
+/* Modern Code Styling */
 code {
-    color: #c02d76;
+    color: var(--accent-orange-dark);
+    background-color: var(--gray-100);
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.875rem;
+    font-weight: 500;
 }
 
-.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
-    color: var(--bs-secondary-color);
+/* Enhanced Form Controls */
+.form-floating > .form-control-plaintext::placeholder, 
+.form-floating > .form-control::placeholder {
+    color: var(--gray-400);
     text-align: end;
+    transition: all 0.2s ease-in-out;
 }
 
-.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
+.form-floating > .form-control-plaintext:focus::placeholder, 
+.form-floating > .form-control:focus::placeholder {
     text-align: start;
+    color: var(--gray-300);
 }
 
+/* Modern Navigation Links */
 .nav-link {
-    /*text-align: center;*/
-    padding: 10px;
-    transition: all 0.3s ease;
+    padding: 0.75rem 1rem;
+    transition: all 0.3s ease-in-out;
+    border-radius: var(--radius-md);
+    font-weight: 500;
+    position: relative;
+    overflow: hidden;
 }
 
 .nav-link:hover {
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(255, 255, 255, 0.15);
+    transform: translateX(0.25rem);
 }
 
 .nav-link.active {
-    background-color: rgba(255, 255, 255, 0.2);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
+    color: white !important;
+    box-shadow: var(--shadow);
+}
+
+/* Learning Progress Cards */
+.learning-progress-container {
+    display: flex;
+    gap: 2rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: 2rem 0;
+}
+
+.progress-card {
+    background: white;
+    border-radius: var(--radius-xl);
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+    transition: all 0.3s ease-in-out;
+    border: 1px solid var(--gray-200);
+}
+
+.progress-card:hover {
+    transform: translateY(-0.25rem);
+    box-shadow: var(--shadow-lg);
 }
