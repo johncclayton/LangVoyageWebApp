@@ -22,10 +22,26 @@ public class TestWebApplicationFactory<TProgram>
             {
                 services.Remove(descriptor);
             }
+            
+            // Remove the existing SqliteConnection if it exists
+            var dbFile = "test-debug.sqlite";
+            if(File.Exists(dbFile))
+            {
+                File.Delete(dbFile);
+            }
 
+            AppDomain.CurrentDomain.ProcessExit += (s, e) =>
+            {
+                if (File.Exists(dbFile))
+                {
+                    File.Delete(dbFile);
+                }
+            };
+            
             services.AddSingleton<SqliteConnection>(container =>
             {
-                var connection = new SqliteConnection("Data Source=:memory:");
+                // var connection = new SqliteConnection("Data Source=:memory:");
+                var connection = new SqliteConnection("Data Source=test-debug.sqlite");
                 connection.Open();
                 return connection;
             });

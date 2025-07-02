@@ -7,140 +7,132 @@ using LangVoyageServer.Requests;
 
 namespace TestServer;
 
+/// <summary>
+/// Legacy test endpoints - refactored to use new helper classes and improved structure
+/// This class maintains backward compatibility while improving test quality
+/// </summary>
 [Collection("Sequential")]
 public class TestEndpoints : IClassFixture<TestWebApplicationFactory<Program>>
 {
     private readonly TestWebApplicationFactory<Program> _factory;
-    private static bool _databaseInitialized;
-    private static readonly object _lock = new object();
+    private readonly HttpClient _client;
 
     public TestEndpoints(TestWebApplicationFactory<Program> factory)
     {
         _factory = factory;
-        lock (_lock)
-        {
-            if (!_databaseInitialized)
-            {
-                using var scope = _factory.Services.CreateScope();
-                var (context, service) = Utilities.SeedDatabase(scope, deleteDatabase: true).GetAwaiter().GetResult();
-
-                service.UpsertUserProfileAsync(1, new UpdateUserRequest()
-                    {
-                        Username = "spaceman",
-                        LanguageLevel = "C2"
-                    }
-                ).GetAwaiter().GetResult();
-
-                context.SaveChanges();
-
-                _databaseInitialized = true;
-            }
-        }
+        _client = TestHelpers.CreateTestClient(factory);
+        DatabaseTestHelper.InitializeDatabase(factory);
     }
 
     [Fact]
     public async Task TestLearning_UserGetsTheRightLevelNouns()
     {
-        var client = _factory.CreateClient();
+        // Arrange
+        using var scope = _factory.Services.CreateScope();
+        await DatabaseTestHelper.CleanupUserProgress(scope, TestConstants.DefaultUserId);
 
-        var userresponse = await client.GetAsync("/user/v1/1");
-        userresponse.EnsureSuccessStatusCode();
-        var user = JsonSerializer.Deserialize<UserProfile>(await userresponse.Content.ReadAsStringAsync(),
-            new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
-        Assert.NotNull(user);
-        Assert.Equal(1, user.Id);
+        // Act - Get user profile
+        var userResponse = await _client.GetAsync(string.Format(TestConstants.ApiEndpoints.UserById, TestConstants.DefaultUserId));
+        userResponse.EnsureSuccessStatusCode();
+        var user = await TestHelpers.DeserializeResponseAsync<UserProfile>(userResponse);
 
-        var response = await client.GetAsync($"/learn/v1/1/noun");
+        // Act - Get nouns for practice
+        var response = await _client.GetAsync(string.Format(TestConstants.ApiEndpoints.LearnNouns, TestConstants.DefaultUserId));
         response.EnsureSuccessStatusCode();
+        var nouns = await TestHelpers.DeserializeResponseAsync<IList<LanguageNoun>>(response);
 
-        var content = await response.Content.ReadAsStringAsync();
-        var nouns = JsonSerializer.Deserialize<IList<LanguageNoun>>(content, new JsonSerializerOptions()
-        {
-            PropertyNameCaseInsensitive = true
-        });
-
-        Assert.NotNull(nouns);
-        Assert.Equal(20, nouns.Count());
-
-        foreach (var noun in nouns)
-        {
-            Assert.Equal(user.LanguageLevel, noun.Level);
-        }
+        // Assert
+        TestHelpers.AssertUserProfile(user, TestConstants.DefaultUserId);
+        TestHelpers.AssertLanguageNouns(nouns, TestConstants.DefaultNounLimit, user?.LanguageLevel);
     }
 
     [Fact]
     public async Task TestLearning_NounProgressBoundaryTests()
     {
+        // Arrange
         using var scope = _factory.Services.CreateScope();
-
-        // fetch a bunch of new ones, just so I can get a suitable user based noun
         var service = scope.ServiceProvider.GetRequiredService<IStorageService>();
-        var results = await service.GetNewPractiseNounsAsync(1);
-        Assert.NotNull(results);
+        await DatabaseTestHelper.CleanupUserProgress(scope, TestConstants.DefaultUserId);
 
-        // take the first, and force create a NounProgress record.
-        var oneNoun = results.First();
-        Assert.NotNull(oneNoun);
+        // Get a noun and build up its progress
+        var nouns = await service.GetNewPractiseNounsAsync(TestConstants.DefaultUserId, 1);
+        var noun = nouns.First();
 
-        // do this twice, so its more 
-        await service.UpsertNounProgressAsync(1, oneNoun.Id, true);
-        await service.UpsertNounProgressAsync(1, oneNoun.Id, true);
+        // Practice correctly twice to build up TimeFrame
+        await service.UpsertNounProgressAsync(TestConstants.DefaultUserId, noun.Id, true);
+        await service.UpsertNounProgressAsync(TestConstants.DefaultUserId, noun.Id, true);
 
-        var oneNounProgress = await service.GetPractiseNounAsync(1, oneNoun.Id);
-        Assert.NotNull(oneNounProgress);
+        var nounProgress = await service.GetPractiseNounAsync(TestConstants.DefaultUserId, noun.Id);
+        Assert.NotNull(nounProgress);
 
-        var initialTimeFrame = oneNounProgress.TimeFrame;
+        // Act - Practice incorrectly to reduce TimeFrame to zero
+        var initialTimeFrame = nounProgress.TimeFrame;
         for (int index = 0; index < initialTimeFrame; index++)
         {
-            await service.UpsertNounProgressAsync(1, oneNounProgress.NounId, false);
+            await service.UpsertNounProgressAsync(TestConstants.DefaultUserId, nounProgress.NounId, false);
         }
 
-        // now it should be at 0
-        var practiceNoun = await service.GetPractiseNounAsync(1, oneNounProgress.NounId);
-        Assert.Equal(0, practiceNoun!.TimeFrame);
+        // Assert - Should be at 0
+        var practiceNoun = await service.GetPractiseNounAsync(TestConstants.DefaultUserId, nounProgress.NounId);
+        Assert.NotNull(practiceNoun);
+        Assert.Equal(0, practiceNoun.TimeFrame);
         
-        // fail it again, it should stay at 0
-        await service.UpsertNounProgressAsync(1, oneNounProgress.NounId, false);
-        practiceNoun = await service.GetPractiseNounAsync(1, oneNounProgress.NounId);
-        Assert.Equal(0, practiceNoun!.TimeFrame);
+        // Act - Practice incorrectly again
+        await service.UpsertNounProgressAsync(TestConstants.DefaultUserId, nounProgress.NounId, false);
+        
+        // Assert - Should stay at 0 (boundary condition)
+        practiceNoun = await service.GetPractiseNounAsync(TestConstants.DefaultUserId, nounProgress.NounId);
+        Assert.NotNull(practiceNoun);
+        Assert.Equal(0, practiceNoun.TimeFrame);
     }
 
     [Fact]
     public async Task TestLearning_NounProgressesAdjusted()
     {
-        // scenario: all nouns have been practised.  some nouns incorrectly, therefore these incorrect nouns will have a different TimeFrame/level.
+        // Arrange
         using var scope = _factory.Services.CreateScope();
-
-        // fix up ALL NounProgress records, forcing this to be the first item in the list.
         var service = scope.ServiceProvider.GetRequiredService<IStorageService>();
-        var result = await service.UpdateAllNounProgressAsync(1);
 
-        // now modify a single noun, by deleting its first NounProgress - this causes it to be the first one returned
-        // and its TimeFrame to be 0 (all the rest are 1).
+        // Set up all nouns with progress, then modify one
+        var result = await service.UpdateAllNounProgressAsync(TestConstants.DefaultUserId);
         var oneNounProgress = result.First();
-        await service.DeleteNounProgressAsync(1, oneNounProgress.NounId);
+        await service.DeleteNounProgressAsync(TestConstants.DefaultUserId, oneNounProgress.NounId);
 
-        var results = await service.GetNewPractiseNounsAsync(1);
+        // Act - Get practice nouns (should prioritize the one without progress)
+        var results = await service.GetNewPractiseNounsAsync(TestConstants.DefaultUserId);
+        
+        // Assert
         Assert.NotNull(results);
         var languageNouns = results.ToList();
-        Assert.Equal(20, results.Count());
-        Assert.Equal(oneNounProgress.NounId, results[0].Id);
+        Assert.Equal(TestConstants.DefaultNounLimit, languageNouns.Count);
+        Assert.Equal(oneNounProgress.NounId, languageNouns[0].Id);
 
-        // now practise this noun TWICE, and re-fetch - this should mean it now disappears from the list. 
-        await service.UpsertNounProgressAsync(1, oneNounProgress.NounId, true); // time frame now 1
-        Assert.Equal(1, (await service.GetPractiseNounAsync(1, oneNounProgress.NounId))!.TimeFrame);
-        await service.UpsertNounProgressAsync(1, oneNounProgress.NounId, true); // time frame now 2
-        Assert.Equal(2, (await service.GetPractiseNounAsync(1, oneNounProgress.NounId))!.TimeFrame);
-        await service.UpsertNounProgressAsync(1, oneNounProgress.NounId, true); // time frame now 3
-        Assert.Equal(3, (await service.GetPractiseNounAsync(1, oneNounProgress.NounId))!.TimeFrame);
+        // Act - Practice this noun multiple times
+        await service.UpsertNounProgressAsync(TestConstants.DefaultUserId, oneNounProgress.NounId, true); // TimeFrame = 1
+        var progress = await service.GetPractiseNounAsync(TestConstants.DefaultUserId, oneNounProgress.NounId);
+        Assert.NotNull(progress);
+        Assert.Equal(1, progress.TimeFrame);
 
-        // now FAIL it, this noun's TimeFrame moves back by one slot
-        await service.UpsertNounProgressAsync(1, oneNounProgress.NounId, false); // time frame now 3
-        Assert.Equal(2, (await service.GetPractiseNounAsync(1, oneNounProgress.NounId))!.TimeFrame);
+        await service.UpsertNounProgressAsync(TestConstants.DefaultUserId, oneNounProgress.NounId, true); // TimeFrame = 2
+        progress = await service.GetPractiseNounAsync(TestConstants.DefaultUserId, oneNounProgress.NounId);
+        Assert.NotNull(progress);
+        Assert.Equal(2, progress.TimeFrame);
 
-        results = await service.GetNewPractiseNounsAsync(1);
+        await service.UpsertNounProgressAsync(TestConstants.DefaultUserId, oneNounProgress.NounId, true); // TimeFrame = 3
+        progress = await service.GetPractiseNounAsync(TestConstants.DefaultUserId, oneNounProgress.NounId);
+        Assert.NotNull(progress);
+        Assert.Equal(3, progress.TimeFrame);
+
+        // Act - Practice incorrectly (should decrease TimeFrame)
+        await service.UpsertNounProgressAsync(TestConstants.DefaultUserId, oneNounProgress.NounId, false);
+        progress = await service.GetPractiseNounAsync(TestConstants.DefaultUserId, oneNounProgress.NounId);
+        Assert.NotNull(progress);
+        Assert.Equal(2, progress.TimeFrame);
+
+        // Assert - Noun should no longer be first in practice list
+        results = await service.GetNewPractiseNounsAsync(TestConstants.DefaultUserId);
         Assert.NotNull(results);
-        Assert.Equal(20, results.Count());
+        Assert.Equal(TestConstants.DefaultNounLimit, results.Count);
         Assert.NotEqual(oneNounProgress.NounId, results[0].Id);
         Assert.DoesNotContain(oneNounProgress.NounId, results.Select(x => x.Id));
     }
@@ -148,132 +140,110 @@ public class TestEndpoints : IClassFixture<TestWebApplicationFactory<Program>>
     [Fact]
     public async Task Test_UserCanBeFetched_ViaUrlAndService()
     {
+        // This test ensures consistency between HTTP endpoint and service layer
         using var scope = _factory.Services.CreateScope();
-
-        // fetch the record via the HTTP endpoint
-        var client = _factory.CreateClient();
-        var response = await client.GetAsync("/user/v1/1");
-        response.EnsureSuccessStatusCode();
-        
-        var data = await response.Content.ReadAsStringAsync();
-        var user = JsonSerializer.Deserialize<UserProfile>(data,
-            new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
-        Assert.NotNull(user);
-
         var service = scope.ServiceProvider.GetRequiredService<IStorageService>();
-        var result = await service.GetUserAsync(1);
 
-        Assert.NotNull(result);
-        Assert.Equal(1, result.Id);
-        Assert.Equal(user.Username, result.Username);
-        Assert.Equal(user.LanguageLevel, result.LanguageLevel);
+        // Act - Fetch via HTTP endpoint
+        var response = await _client.GetAsync(string.Format(TestConstants.ApiEndpoints.UserById, TestConstants.DefaultUserId));
+        response.EnsureSuccessStatusCode();
+        var httpUser = await TestHelpers.DeserializeResponseAsync<UserProfile>(response);
+
+        // Act - Fetch via service
+        var serviceUser = await service.GetUserAsync(TestConstants.DefaultUserId);
+
+        // Assert - Both should return the same data
+        TestHelpers.AssertUserProfile(httpUser, TestConstants.DefaultUserId);
+        TestHelpers.AssertUserProfile(serviceUser, TestConstants.DefaultUserId);
+        Assert.Equal(httpUser?.Username, serviceUser?.Username);
+        Assert.Equal(httpUser?.LanguageLevel, serviceUser?.LanguageLevel);
     }
 
     [Fact]
     public async Task Test_UserLanguageLevel_CanBeUpdated()
     {
-        var client = _factory.CreateClient();
-        var response = await client.PatchAsync("/user/v1/1", new StringContent(JsonSerializer.Serialize(
-            new UpdateUserRequest()
-            {
-                Username = "spiffy",
-                LanguageLevel = "C1"
-            }), Encoding.UTF8, "application/json"));
+        // Arrange
+        var updateRequest = TestHelpers.CreateValidUpdateUserRequest("spiffy", "C1");
+        var content = TestHelpers.CreateJsonContent(updateRequest);
 
+        // Act
+        var response = await _client.PatchAsync(string.Format(TestConstants.ApiEndpoints.UserById, TestConstants.DefaultUserId), content);
+
+        // Assert
         response.EnsureSuccessStatusCode();
-
-        string? result = await response.Content.ReadAsStringAsync();
-        Assert.NotNull(result);
-        var user = JsonSerializer.Deserialize<UserProfile>(result,
-            new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
-        Assert.NotNull(user);
-        Assert.Equal("spiffy", user.Username);
-        Assert.Equal("C1", user.LanguageLevel);
+        var updatedUser = await TestHelpers.DeserializeResponseAsync<UserProfile>(response);
+        TestHelpers.AssertUserProfile(updatedUser, TestConstants.DefaultUserId, "spiffy", "C1");
     }
 
     [Fact]
     public async Task Test_UserLanguageLevel_PatchValidation()
     {
-        // try setting a crap language level, should get a validation error
-        var client = _factory.CreateClient();
-        var response = await client.PatchAsync("/user/v1/1", new StringContent(JsonSerializer.Serialize(
-            new UpdateUserRequest()
-            {
-                Username = "spiffy",
-                LanguageLevel = "C0"
-            }), Encoding.UTF8, "application/json"));
+        // Arrange
+        var invalidRequest = TestHelpers.CreateInvalidUpdateUserRequest();
+        var content = TestHelpers.CreateJsonContent(invalidRequest);
+
+        // Act
+        var response = await _client.PatchAsync(string.Format(TestConstants.ApiEndpoints.UserById, TestConstants.DefaultUserId), content);
+
+        // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
     [Fact]
     public async Task TestLearning_ProgressThroughLevel()
     {
-        var client = _factory.CreateClient();
-        
-        var ur = await client.GetAsync("/user/v1/1");
-        ur.EnsureSuccessStatusCode();
-        var user = JsonSerializer.Deserialize<UserProfile>(await ur.Content.ReadAsStringAsync(),
-            new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
-
-        // I want to be able to see my progress through the level.  this is done by fetching the progress component,
-        // which right now just handles progress of nouns (sentences, speaking, writing come later). 
-        var response = await client.GetAsync("/learn/v1/1/progress");
-        Assert.NotNull(response);
-        response.EnsureSuccessStatusCode();
-
-        // parse back to LearningProgressResponse
-        var content = await response.Content.ReadAsStringAsync();
-        var progress = JsonSerializer.Deserialize<LearningProgressResponse>(content, new JsonSerializerOptions()
-        {
-            PropertyNameCaseInsensitive = true
-        });
-
-        Assert.NotNull(progress);
-        Assert.NotNull(user);
-        
-        Assert.Equal(user.Username, progress.Username);
-        Assert.Equal(user.LanguageLevel, progress.LanguageLevel);
-        
-        // now complete 2, we should see the progress at time frame 1 increase by 2.
+        // Arrange
         using var scope = _factory.Services.CreateScope();
         var service = scope.ServiceProvider.GetRequiredService<IStorageService>();
         
-        // remove ALL progress records, to set up a clean slate.
-        await service.DeleteAllNounProgressAsync(1);
-        
-        var allNouns = await service.GetNewPractiseNounsAsync(1, 5);
-        Assert.NotNull(allNouns);
-        Assert.Equal(5, allNouns.Count());
-        
-        foreach (var noun in allNouns)
-        {
-            await service.UpsertNounProgressAsync(1, noun.Id, true);
-        }
-        
-        var updatedProgress = await service.GetLearningProgress(1);
-        Assert.NotNull(updatedProgress);
-        Assert.Equal(progress.TotalNouns, updatedProgress.TotalNouns);
-        Assert.Equal(5, updatedProgress.NounProgresses[1]);
-        
-        // now complete these AGAIN, and we should see a gap in the progress array develop.
-        foreach (var noun in allNouns)
-        {
-            await service.UpsertNounProgressAsync(1, noun.Id, true);
-        }
-        
-        updatedProgress = await service.GetLearningProgress(1);
-        Assert.NotNull(updatedProgress);
-        Assert.Equal(progress.TotalNouns, updatedProgress.TotalNouns);
-        Assert.Equal(0, updatedProgress.NounProgresses[1]);
-        Assert.Equal(5, updatedProgress.NounProgresses[2]);
-        
-        // now lets "fail" one, and see the progress report.
-        await service.UpsertNounProgressAsync(1, allNouns.First().Id, false);
+        // Clean slate for consistent testing
+        await service.DeleteAllNounProgressAsync(TestConstants.DefaultUserId);
 
-        updatedProgress = await service.GetLearningProgress(1);
+        // Get user profile
+        var userResponse = await _client.GetAsync(string.Format(TestConstants.ApiEndpoints.UserById, TestConstants.DefaultUserId));
+        userResponse.EnsureSuccessStatusCode();
+        var user = await TestHelpers.DeserializeResponseAsync<UserProfile>(userResponse);
+
+        // Get initial progress
+        var progressResponse = await _client.GetAsync(string.Format(TestConstants.ApiEndpoints.LearningProgress, TestConstants.DefaultUserId));
+        progressResponse.EnsureSuccessStatusCode();
+        var initialProgress = await TestHelpers.DeserializeResponseAsync<LearningProgressResponse>(progressResponse);
+
+        // Assert initial state
+        TestHelpers.AssertLearningProgress(initialProgress, user?.Username ?? "", user?.LanguageLevel ?? "");
+
+        // Act - Practice 5 nouns correctly
+        var nouns = await service.GetNewPractiseNounsAsync(TestConstants.DefaultUserId, TestConstants.SmallNounLimit);
+        foreach (var noun in nouns)
+        {
+            await service.UpsertNounProgressAsync(TestConstants.DefaultUserId, noun.Id, true);
+        }
+
+        // Assert - Progress should show 5 nouns at TimeFrame 1
+        var updatedProgress = await service.GetLearningProgress(TestConstants.DefaultUserId);
         Assert.NotNull(updatedProgress);
-        Assert.Equal(progress.TotalNouns, updatedProgress.TotalNouns);
+        Assert.Equal(initialProgress?.TotalNouns, updatedProgress.TotalNouns);
+        Assert.Equal(TestConstants.SmallNounLimit, updatedProgress.NounProgresses[1]);
+
+        // Act - Practice same nouns again (should move to TimeFrame 2)
+        foreach (var noun in nouns)
+        {
+            await service.UpsertNounProgressAsync(TestConstants.DefaultUserId, noun.Id, true);
+        }
+
+        // Assert - Progress should show gap at TimeFrame 1, and 5 nouns at TimeFrame 2
+        updatedProgress = await service.GetLearningProgress(TestConstants.DefaultUserId);
+        Assert.NotNull(updatedProgress);
+        Assert.Equal(0, updatedProgress.NounProgresses[1]);
+        Assert.Equal(TestConstants.SmallNounLimit, updatedProgress.NounProgresses[2]);
+
+        // Act - Practice one noun incorrectly (should move back to TimeFrame 1)
+        await service.UpsertNounProgressAsync(TestConstants.DefaultUserId, nouns.First().Id, false);
+
+        // Assert - Final state
+        updatedProgress = await service.GetLearningProgress(TestConstants.DefaultUserId);
+        Assert.NotNull(updatedProgress);
         Assert.Equal(1, updatedProgress.NounProgresses[1]);
-        Assert.Equal(4, updatedProgress.NounProgresses[2]);
+        Assert.Equal(TestConstants.SmallNounLimit - 1, updatedProgress.NounProgresses[2]);
     }
 }

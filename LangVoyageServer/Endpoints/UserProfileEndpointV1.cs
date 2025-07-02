@@ -12,30 +12,25 @@ public static class UserProfileEndpointV1
         group.MapGet("/{id:int}", async (IStorageService srv, int id) =>
             {
                 var user = await srv.GetUserAsync(id);
-                if (user == null)
-                {
-                    return Results.NotFound();
-                }
+                if (user == null) return Results.NotFound();
 
                 return TypedResults.Ok(await srv.GetUserAsync(id));
             })
-            .WithDescription("Retrieves a user profile by their unique identifier. Returns the complete user profile including username and current language level.")
+            .WithDescription(
+                "Retrieves a user profile by their unique identifier. Returns the complete user profile including username and current language level.")
             .WithName("GetUserById")
             .WithSummary("Get user profile by ID")
-            .WithOpenApi(operation => new(operation)
+            .WithOpenApi(operation => new OpenApiOperation(operation)
             {
                 Parameters = operation.Parameters?.Select(p =>
                 {
-                    if (p.Name == "id")
-                    {
-                        p.Description = "The unique identifier of the user profile to retrieve";
-                    }
+                    if (p.Name == "id") p.Description = "The unique identifier of the user profile to retrieve";
                     return p;
                 }).ToList(),
-                Responses = new Microsoft.OpenApi.Models.OpenApiResponses
+                Responses = new OpenApiResponses
                 {
-                    ["200"] = new Microsoft.OpenApi.Models.OpenApiResponse { Description = "User profile found and returned successfully" },
-                    ["404"] = new Microsoft.OpenApi.Models.OpenApiResponse { Description = "User profile not found for the specified ID" }
+                    ["200"] = new OpenApiResponse { Description = "User profile found and returned successfully" },
+                    ["404"] = new OpenApiResponse { Description = "User profile not found for the specified ID" }
                 }
             });
 
@@ -43,42 +38,34 @@ public static class UserProfileEndpointV1
                 async (IValidator<UpdateUserRequest> validator, IStorageService srv, int id, UpdateUserRequest req) =>
                 {
                     var validResult = await validator.ValidateAsync(req);
-                    if (!validResult.IsValid)
-                    {
-                        return Results.ValidationProblem(validResult.ToDictionary());
-                    }
+                    if (!validResult.IsValid) return Results.ValidationProblem(validResult.ToDictionary());
 
                     var user = await srv.GetUserAsync(id);
-                    if (user == null)
-                    {
-                        return Results.NotFound();
-                    }
+                    if (user == null) return Results.NotFound();
 
                     return TypedResults.Ok(await srv.UpsertUserProfileAsync(id, req));
                 })
-            .WithDescription("Updates an existing user profile's language level and/or username. Validates the request before applying changes. Both fields are optional - only provided fields will be updated.")
+            .WithDescription(
+                "Updates an existing user profile's language level and/or username. Validates the request before applying changes. Both fields are optional - only provided fields will be updated.")
             .WithName("UpdateUserById")
             .WithSummary("Update user profile")
-            .WithOpenApi(operation => new(operation)
+            .WithOpenApi(operation => new OpenApiOperation(operation)
             {
                 Parameters = operation.Parameters?.Select(p =>
                 {
-                    if (p.Name == "id")
-                    {
-                        p.Description = "The unique identifier of the user profile to update";
-                    }
+                    if (p.Name == "id") p.Description = "The unique identifier of the user profile to update";
                     return p;
                 }).ToList(),
-                RequestBody = new Microsoft.OpenApi.Models.OpenApiRequestBody
+                RequestBody = new OpenApiRequestBody
                 {
                     Description = "Update request containing optional username and/or language level changes",
                     Required = true
                 },
-                Responses = new Microsoft.OpenApi.Models.OpenApiResponses
+                Responses = new OpenApiResponses
                 {
-                    ["200"] = new() { Description = "User profile updated successfully" },
-                    ["400"] = new() { Description = "Validation failed for the provided request data" },
-                    ["404"] = new() { Description = "User profile not found for the specified ID" }
+                    ["200"] = new OpenApiResponse { Description = "User profile updated successfully" },
+                    ["400"] = new OpenApiResponse { Description = "Validation failed for the provided request data" },
+                    ["404"] = new OpenApiResponse { Description = "User profile not found for the specified ID" }
                 }
             });
 
