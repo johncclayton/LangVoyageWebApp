@@ -3,6 +3,7 @@ using System;
 using LangVoyageServer.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LangVoyageServer.Migrations
 {
     [DbContext(typeof(LangServerDbContext))]
-    partial class LangServerDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250703174135_NounVersion_RowVersion")]
+    partial class NounVersion_RowVersion
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.6");

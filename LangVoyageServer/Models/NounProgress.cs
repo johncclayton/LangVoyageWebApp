@@ -18,4 +18,7 @@ public class NounProgress
     public int TimeFrame { get; set; }
     
     public DateTime LastPractised { get; set; }
+    
+    [Timestamp]
+    public byte[] RowVersion { get; set; }
 }
