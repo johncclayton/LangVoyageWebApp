@@ -35,7 +35,11 @@ builder.Services.AddCors(options =>
 // });
 
 var connString = builder.Configuration.GetConnectionString("DefaultConnection");
-builder.Services.AddDbContext<LangServerDbContext>(options => { options.UseSqlite(connString); });
+builder.Services.AddDbContext<LangServerDbContext>(options =>
+{
+    options.UseSqlite(connString);
+    //options.EnableDetailedErrors();
+});
 builder.Services.AddScoped<IStorageService, SqliteStorageService>();
 
 var app = builder.Build();

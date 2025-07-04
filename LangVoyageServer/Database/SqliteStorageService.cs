@@ -1,6 +1,7 @@
 ﻿using LangVoyageServer.Models;
 using LangVoyageServer.Requests;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace LangVoyageServer.Database;
 
@@ -111,35 +112,100 @@ public class SqliteStorageService : IStorageService
         return await _context.NounProgresses.FindAsync([userId, nounId]);
     }
 
+    private static bool IsUniqueConstraintViolation(DbUpdateException ex)
+    {
+        // For Sqlite, check for SqliteException with error code 19 (constraint violation)
+        return ex.InnerException is Microsoft.Data.Sqlite.SqliteException sqliteEx && sqliteEx.SqliteErrorCode == 19;
+    }
+    
     public async Task<NounProgress> UpsertNounProgressAsync(int userId, int nounId, bool wasCorrect)
     {
-        var user = await GetUserAsync(userId);
-        if (user == null)
+        using(var transaction = await _context.Database.BeginTransactionAsync())
         {
-            throw new Exception("No user profile found.");
-        }
-
-        var nounProgress = await _context.NounProgresses.FindAsync([userId, nounId]);
-        if (nounProgress == null)
-        {
-            // Create new progress record for first-time practice
-            // Starting TimeFrame of 1 indicates beginner level
-            var newProgress = _context.NounProgresses.Add(new NounProgress
+            var user = await GetUserAsync(userId);
+            if (user == null)
             {
-                UserProfileId = user.Id,
-                NounId = nounId,
-                LastPractised = DateTime.UtcNow,
-                TimeFrame = 1
-            });
+                throw new Exception("No user profile found.");
+            }
 
-            await _context.SaveChangesAsync();
+            var nounExists = await _context.Nouns.AnyAsync(n => n.Id == nounId);
+            if (!nounExists)
+            {
+                throw new Exception($"Noun with ID {nounId} does not exist.");
+            }
 
-            return newProgress.Entity;
+            var nounProgress = await _context.NounProgresses.FindAsync([userId, nounId]);
+            if (nounProgress == null)
+            {
+                EntityEntry<NounProgress>? newProgress = null;
+                try
+                {
+                    // Try to insert, and retry as update if a UNIQUE constraint violation occurs
+                    newProgress = _context.NounProgresses.Add(new NounProgress
+                    {
+                        UserProfileId = user.Id,
+                        NounId = nounId,
+                        LastPractised = DateTime.UtcNow,
+                        TimeFrame = 1
+                    });
+
+                    await _context.SaveChangesAsync();
+                    
+                    await transaction.CommitAsync();
+                    
+                    return newProgress.Entity;
+                }
+                catch (DbUpdateException ex) when (IsUniqueConstraintViolation(ex))
+                {
+                    // Console.WriteLine(_context.ChangeTracker.DebugView.ShortView);
+
+                    if (newProgress is not null)
+                    {
+                        // If we had a new progress entry, detach it to avoid tracking issues
+                        _context.Entry(newProgress.Entity).State = EntityState.Detached;
+                    }
+
+                    // Another thread/process inserted the row first, so update instead
+                    nounProgress = await _context.NounProgresses
+                        .FirstOrDefaultAsync(np => np.UserProfileId == userId && np.NounId == nounId);
+
+                    if (nounProgress == null)
+                    {
+                        throw new Exception($"Noun with ID {nounId} does not exist (re-fetch on update exception).");
+                    }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    throw;
+                }
+            }
+
+            UpdateNounProgress(wasCorrect, nounProgress);
+
+            try
+            {
+                await _context.SaveChangesAsync();
+                
+                await transaction.CommitAsync();
+
+            }
+            catch (Exception ex)
+            {
+                // Log the exception (replace with your preferred logging mechanism)
+                Console.WriteLine($"Error saving noun progress: {ex.Message}\n{ex.StackTrace}");
+                throw;
+            }
+
+            return nounProgress;
         }
+    }
 
+    private static void UpdateNounProgress(bool wasCorrect, NounProgress nounProgress)
+    {
         // Update existing progress record
         nounProgress.LastPractised = DateTime.UtcNow;
-        
+
         // Implement spaced repetition logic:
         // Correct answers increase TimeFrame (longer intervals between practice)
         // Incorrect answers decrease TimeFrame (more frequent practice needed)
@@ -152,10 +218,6 @@ public class SqliteStorageService : IStorageService
         {
             nounProgress.TimeFrame--;
         }
-
-        await _context.SaveChangesAsync();
-
-        return nounProgress;
     }
 
     public async Task<int> DeleteNounProgressAsync(int userId, int nounId)
